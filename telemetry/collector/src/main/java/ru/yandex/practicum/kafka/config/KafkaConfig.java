@@ -1,3 +1,5 @@
+package ru.yandex.practicum.kafka.config;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.avro.specific.SpecificRecordBase;
