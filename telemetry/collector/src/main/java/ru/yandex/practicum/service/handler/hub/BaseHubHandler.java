@@ -29,7 +29,7 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
         log.debug("map To avro confirm hubId={}", event.getHubId());
         ProducerRecord<String, SpecificRecordBase> param = createProducerSendParam(event, avro);
         log.debug("param created confirm hubId={}", event.getHubId());
-        producer.sendRecord(param.topic(), param.timestamp(), param.key(), param.value());
+        producer.sendRecord(param);
         log.debug("record send confirm hubId={}", event.getHubId());
     }
 
