@@ -7,7 +7,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.apache.kafka.clients.producer.ProducerRecord;
-
 import ru.yandex.practicum.exception.errorhandler.KafkaSendException;
 
 import java.util.concurrent.ExecutionException;
@@ -21,16 +20,16 @@ public class KafkaEventProducer implements DisposableBean {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendRecord(String topic, Long timestamp, String key, SpecificRecordBase value) {
-        if (!(topic != null && timestamp != null && key != null && value != null)) {
-            throw new IllegalArgumentException("Недопустимое содержимое ProducerParam: " + topic + ", " + timestamp + ", " + timestamp + ", " + timestamp);
+    public void sendRecord(ProducerRecord<String, SpecificRecordBase> param) {
+        if (!(param.topic() != null && param.timestamp() != null && param.key() != null && param.value() != null)) {
+            throw new IllegalArgumentException("Недопустимый ProducerParam: " + param);
         }
 
         try {
-            ProducerRecord<String, SpecificRecordBase> createdRecord = createProducerRecord(topic, timestamp, key, value);
+            ProducerRecord<String, SpecificRecordBase> createdRecord = createProducerRecord(param.topic(), param.timestamp(), param.key(), param.value());
             sendKafkaMessage(createdRecord);
         } catch (Exception e) {
-            handleException(topic, timestamp, key, value, e);
+            handleException(param, e);
         }
     }
 
@@ -40,19 +39,14 @@ public class KafkaEventProducer implements DisposableBean {
 
     private void sendKafkaMessage(ProducerRecord<String, SpecificRecordBase> record) {
         try {
-            kafkaTemplate.send(record).get();
-        } catch (ExecutionException e) {
-            throw new KafkaSendException("Ошибка при отправке сообщения", e.getCause());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Восстановите статус прерывания
-            throw new KafkaSendException("Ошибка при отправке сообщения", e);
+            kafkaTemplate.send(record);
         } catch (Exception e) {
             throw new KafkaSendException("Ошибка при отправке сообщения", e);
         }
     }
 
-    private void handleException(String topic, Long timestamp, String key, SpecificRecordBase value, Exception e) {
-        log.error("Ошибка при отправке сообщения для содержимого ProducerParam: " + topic + ", " + timestamp + ", " + timestamp + ", " + timestamp, e);
+    private void handleException(ProducerRecord<String, SpecificRecordBase> param, Exception e) {
+        log.error("Ошибка при отправке сообщения для param={}", param, e);
     }
 
     @Override

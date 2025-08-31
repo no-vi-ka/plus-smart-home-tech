@@ -24,9 +24,9 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
         log.debug("instance check confirm hubId={}", event.getHubId());
         SensorEventAvro avro = mapToAvroSensorEvent(event);
         log.debug("map To avro confirm hubId={}", event.getHubId());
-        ProducerRecord<String, SpecificRecordBase> param = createProducerParam(event, avro);
+        ProducerRecord<String, SpecificRecordBase> param = createProducerSendParam(event, avro);
         log.debug("param created confirm hubId={}", event.getHubId());
-        producer.sendRecord(param.topic(), param.timestamp(), param.key(), param.value());
+        producer.sendRecord(param);
         log.debug("record send confirm hubId={}", event.getHubId());
     }
 
@@ -44,7 +44,7 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
                 .build();
     }
 
-    private ProducerRecord<String, SpecificRecordBase> createProducerParam(SensorEvent event, SensorEventAvro avro) {
+    private ProducerRecord<String, SpecificRecordBase> createProducerSendParam(SensorEvent event, SensorEventAvro avro) {
         return new ProducerRecord<>(topicsNames.getHubsTopic(), null, event.getTimestamp().toEpochMilli(), event.getHubId(), avro);
     }
 
