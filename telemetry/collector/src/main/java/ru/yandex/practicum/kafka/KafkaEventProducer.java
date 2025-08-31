@@ -6,6 +6,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 import ru.yandex.practicum.exception.errorhandler.KafkaSendException;
 
@@ -20,30 +21,24 @@ public class KafkaEventProducer implements DisposableBean {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendRecord(ProducerRecord param) {
-        if (!param.isValid()) {
-            throw new IllegalArgumentException("Недопустимый ProducerParam: " + param);
+    public void sendRecord(String topic, Long timestamp, String key, SpecificRecordBase value) {
+        if (!(topic != null && timestamp != null && key != null && value != null)) {
+            throw new IllegalArgumentException("Недопустимое содержимое ProducerParam: " + topic + ", " + timestamp + ", " + timestamp + ", " + timestamp);
         }
 
         try {
-            org.apache.kafka.clients.producer.ProducerRecord<String, SpecificRecordBase> createdRecord = createProducerRecord(param);
+            ProducerRecord<String, SpecificRecordBase> createdRecord = createProducerRecord(topic, timestamp, key, value);
             sendKafkaMessage(createdRecord);
         } catch (Exception e) {
-            handleException(param, e);
+            handleException(topic, timestamp, key, value, e);
         }
     }
 
-    private org.apache.kafka.clients.producer.ProducerRecord<String, SpecificRecordBase> createProducerRecord(ProducerRecord param) {
-        return new org.apache.kafka.clients.producer.ProducerRecord<>(
-                param.getTopic(),
-                param.getPartition(),
-                param.getTimestamp(),
-                param.getKey(),
-                param.getValue()
-        );
+    private ProducerRecord<String, SpecificRecordBase> createProducerRecord(String topic, Long timestamp, String key, SpecificRecordBase value) {
+        return new ProducerRecord<>(topic, null, timestamp, key, value);
     }
 
-    private void sendKafkaMessage(org.apache.kafka.clients.producer.ProducerRecord<String, SpecificRecordBase> record) {
+    private void sendKafkaMessage(ProducerRecord<String, SpecificRecordBase> record) {
         try {
             kafkaTemplate.send(record).get();
         } catch (ExecutionException e) {
@@ -56,8 +51,8 @@ public class KafkaEventProducer implements DisposableBean {
         }
     }
 
-    private void handleException(ProducerRecord param, Exception e) {
-        log.error("Ошибка при отправке сообщения для param={}", param, e);
+    private void handleException(String topic, Long timestamp, String key, SpecificRecordBase value, Exception e) {
+        log.error("Ошибка при отправке сообщения для содержимого ProducerParam: " + topic + ", " + timestamp + ", " + timestamp + ", " + timestamp, e);
     }
 
     @Override

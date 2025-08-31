@@ -5,10 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
-import ru.yandex.practicum.kafka.ProducerRecord;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.model.hub.HubEvent;
 import ru.yandex.practicum.model.hub.enums.HubEventType;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,9 +26,9 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
         log.debug("instance check confirm hubId={}", event.getHubId());
         HubEventAvro avro = mapToAvroHubEvent(event);
         log.debug("map To avro confirm hubId={}", event.getHubId());
-        ProducerRecord param = createProducerSendParam(event, avro);
+        ProducerRecord<String, SpecificRecordBase> param = createProducerSendParam(event, avro);
         log.debug("param created confirm hubId={}", event.getHubId());
-        producer.sendRecord(param);
+        producer.sendRecord(param.topic(), param.timestamp(), param.key(), param.value());
         log.debug("record send confirm hubId={}", event.getHubId());
     }
 
@@ -45,13 +45,8 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
                 .build();
     }
 
-    private ProducerRecord createProducerSendParam(HubEvent event, HubEventAvro avro) {
-        return ProducerRecord.builder()
-                .topic(topicsNames.getHubsTopic())
-                .timestamp(event.getTimestamp().toEpochMilli())
-                .key(event.getHubId())
-                .value(avro)
-                .build();
+    private ProducerRecord<String, SpecificRecordBase> createProducerSendParam(HubEvent event, HubEventAvro avro) {
+        return new ProducerRecord<>(topicsNames.getHubsTopic(), null, event.getTimestamp().toEpochMilli(), event.getHubId(), avro);
     }
 
     protected abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);

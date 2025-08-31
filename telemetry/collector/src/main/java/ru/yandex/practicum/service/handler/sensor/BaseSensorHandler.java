@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.ProducerRecord;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.model.sensor.SensorEvent;
 import ru.yandex.practicum.model.sensor.enums.SensorEventType;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,9 +24,9 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
         log.debug("instance check confirm hubId={}", event.getHubId());
         SensorEventAvro avro = mapToAvroSensorEvent(event);
         log.debug("map To avro confirm hubId={}", event.getHubId());
-        ProducerRecord param = createProducerParam(event, avro);
+        ProducerRecord<String, SpecificRecordBase> param = createProducerParam(event, avro);
         log.debug("param created confirm hubId={}", event.getHubId());
-        producer.sendRecord(param);
+        producer.sendRecord(param.topic(), param.timestamp(), param.key(), param.value());
         log.debug("record send confirm hubId={}", event.getHubId());
     }
 
@@ -44,13 +44,8 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
                 .build();
     }
 
-    private ProducerRecord createProducerParam(SensorEvent event, SensorEventAvro avro) {
-        return ProducerRecord.builder()
-                .topic(topicsNames.getSensorsTopic())
-                .timestamp(event.getTimestamp().toEpochMilli())
-                .key(event.getHubId())
-                .value(avro)
-                .build();
+    private ProducerRecord<String, SpecificRecordBase> createProducerParam(SensorEvent event, SensorEventAvro avro) {
+        return new ProducerRecord<>(topicsNames.getHubsTopic(), null, event.getTimestamp().toEpochMilli(), event.getHubId(), avro);
     }
 
     protected abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
