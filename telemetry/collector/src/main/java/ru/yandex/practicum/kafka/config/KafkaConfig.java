@@ -3,6 +3,7 @@ package ru.yandex.practicum.kafka.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,11 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, SpecificRecordBase> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public Producer<String, SpecificRecordBase> kafkaProducer(ProducerFactory<String, SpecificRecordBase> producerFactory) {
+        return producerFactory.createProducer();
     }
 
 }
