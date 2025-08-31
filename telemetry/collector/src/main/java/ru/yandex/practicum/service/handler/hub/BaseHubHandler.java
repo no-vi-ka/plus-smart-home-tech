@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
-import ru.yandex.practicum.kafka.ProducerParam;
+import ru.yandex.practicum.kafka.ProducerRecord;
 import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
 import ru.yandex.practicum.model.hub.HubEvent;
 import ru.yandex.practicum.model.hub.enums.HubEventType;
@@ -23,13 +23,13 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
         if (event == null) {
             throw new IllegalArgumentException("HubEvent cannot be null");
         }
-        log.trace("instance check confirm hubId={}", event.getHubId());
+        log.debug("instance check confirm hubId={}", event.getHubId());
         HubEventAvro avro = mapToAvroHubEvent(event);
-        log.trace("map To avro confirm hubId={}", event.getHubId());
-        ProducerParam param = createProducerSendParam(event, avro);
-        log.trace("param created confirm hubId={}", event.getHubId());
+        log.debug("map To avro confirm hubId={}", event.getHubId());
+        ProducerRecord param = createProducerRecordToSend(event, avro);
+        log.debug("param created confirm hubId={}", event.getHubId());
         producer.sendRecord(param);
-        log.trace("record send confirm hubId={}", event.getHubId());
+        log.debug("record send confirm hubId={}", event.getHubId());
     }
 
     @Override
@@ -45,8 +45,8 @@ public abstract class BaseHubHandler<T extends SpecificRecordBase> implements Hu
                 .build();
     }
 
-    private ProducerParam createProducerSendParam(HubEvent event, HubEventAvro avro) {
-        return ProducerParam.builder()
+    private ProducerRecord createProducerRecordToSend(HubEvent event, HubEventAvro avro) {
+        return ProducerRecord.builder()
                 .topic(topicsNames.getHubsTopic())
                 .timestamp(event.getTimestamp().toEpochMilli())
                 .key(event.getHubId())

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.exception.errorHandler;
+package ru.yandex.practicum.exception.errorhandler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

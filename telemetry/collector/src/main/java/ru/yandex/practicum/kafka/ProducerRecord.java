@@ -9,7 +9,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 @Builder
 @Getter
 @ToString
-public class ProducerParam {
+public class ProducerRecord {
     private final String topic;
     private final Integer partition;
     private final Long timestamp;
