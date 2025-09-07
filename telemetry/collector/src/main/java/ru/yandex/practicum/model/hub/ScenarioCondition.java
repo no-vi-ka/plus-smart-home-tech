@@ -1,4 +1,3 @@
-
 package ru.yandex.practicum.model.hub;
 
 import jakarta.validation.constraints.NotBlank;
@@ -21,5 +20,5 @@ public class ScenarioCondition {
     private ConditionOperation operation;
 
     @NotNull
-    private Integer value;
+    private Object value;
 }
