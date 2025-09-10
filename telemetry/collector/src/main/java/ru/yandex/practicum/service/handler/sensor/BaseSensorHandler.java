@@ -21,9 +21,9 @@ public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements
         if (event == null) {
             throw new IllegalArgumentException("HubEvent cannot be null");
         }
-        log.trace("instance check confirm hubId={}", event.getHubId());
+        log.debug("instance check confirm hubId={}", event.getHubId());
         SensorEventAvro avro = mapToAvroSensorEvent(event);
-        log.trace("map To avro confirm hubId={}", event.getHubId());
+        log.debug("map To avro confirm hubId={}", event.getHubId());
         ProducerRecord<String, SpecificRecordBase> param = createProducerSendParam(event, avro);
         log.debug("param created confirm hubId={}", event.getHubId());
         producer.sendRecord(param);

@@ -35,4 +35,3 @@ public class ScenarioRemovedHandler extends BaseHubHandler<ScenarioRemovedEventA
         return buildHubEventAvro(hubEvent, avro);
     }
 }
-
