@@ -52,7 +52,7 @@ public class AggregationStarter implements CommandLineRunner {
                 ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
                 int count = 0;
                 for (ConsumerRecord<String, SpecificRecordBase> record : records) {
-                    log.info("Обрабатываем очередное сообщение {}", record.value());
+                    log.debug("Обрабатываем очередное сообщение {}", record.value());
                     handleRecord(record);
                     manageOffsets(record, count);
                     count++;
@@ -67,9 +67,9 @@ public class AggregationStarter implements CommandLineRunner {
                 producer.flush();
                 consumer.commitSync();
             } finally {
-                log.info("Закрываем CONSUMER");
+                log.debug("Закрываем CONSUMER");
                 consumer.close();
-                log.info("Закрываем PRODUCER");
+                log.debug("Закрываем PRODUCER");
                 producer.close();
             }
         }
@@ -82,20 +82,20 @@ public class AggregationStarter implements CommandLineRunner {
     }
 
     private void handleRecord(ConsumerRecord<String, SpecificRecordBase> record) {
-        log.info("топик = {}, партиция = {}, смещение = {}, значение: {}",
+        log.debug("топик = {}, партиция = {}, смещение = {}, значение: {}",
                 record.topic(), record.partition(), record.offset(), record.value());
         SensorEventAvro event = (SensorEventAvro) record.value();
         Optional<SensorsSnapshotAvro> snapshot = aggregationSnapshot.updateState(event);
-        log.info("Получили снимок состояния {}", snapshot);
+        log.debug("Получили снимок состояния {}", snapshot);
         if (snapshot.isPresent()) {
-            log.info("Запись в топик Kafka");
+            log.debug("Запись в топик Kafka");
             ProducerRecord<String, SpecificRecordBase> producerRecord = new ProducerRecord<>(snapshotsTopic,
                     null, event.getTimestamp().toEpochMilli(), event.getHubId(), snapshot.get());
 
             producer.send(producerRecord);
-            log.info("SNAPSHOT обновлен и отправлен {}", snapshot);
+            log.debug("SNAPSHOT обновлен и отправлен {}", snapshot);
         } else {
-            log.info("SNAPSHOT не обновлен");
+            log.debug("SNAPSHOT не обновлен");
         }
     }
 
