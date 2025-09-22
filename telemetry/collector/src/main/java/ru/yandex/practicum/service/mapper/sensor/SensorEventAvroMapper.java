@@ -26,3 +26,4 @@ public interface SensorEventAvroMapper {
 
     TemperatureSensorAvro mapTemperatureSensor(TemperatureSensorEvent temperatureSensorEvent);
 }
+
