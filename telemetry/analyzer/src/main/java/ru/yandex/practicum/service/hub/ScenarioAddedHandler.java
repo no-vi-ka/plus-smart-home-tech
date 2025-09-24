@@ -122,12 +122,13 @@ public class ScenarioAddedHandler implements HubEventHandler {
     }
 
     private Integer asInteger(Object value) {
-        if (value == null) {
-            return null;
+        if (value instanceof Integer) {
+            return (Integer) value;
+        } else if (value instanceof Boolean) {
+            return ((Boolean) value) ? 1 : 0;
+        } else if (value instanceof Number) {
+            return ((Number) value).intValue();
         }
-
-        return value instanceof Integer
-                ? (Integer) value
-                : ((Boolean) value ? 1 : 0);
+        return null;
     }
 }
