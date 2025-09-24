@@ -1,4 +1,3 @@
-
 package ru.yandex.practicum.exception.errorhandler;
 
 public class KafkaSendException extends RuntimeException {

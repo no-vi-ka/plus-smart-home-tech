@@ -1,4 +1,3 @@
-
 package ru.yandex.practicum.model.hub;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;

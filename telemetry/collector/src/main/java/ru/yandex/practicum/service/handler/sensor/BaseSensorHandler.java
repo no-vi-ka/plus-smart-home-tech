@@ -2,53 +2,31 @@ package ru.yandex.practicum.service.handler.sensor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.sensor.SensorEvent;
-import ru.yandex.practicum.model.sensor.enums.SensorEventType;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
+
+import java.time.Instant;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class BaseSensorHandler<T extends SpecificRecordBase> implements SensorEventHandler {
-    protected final KafkaEventProducer producer;
-    protected final KafkaTopicsNames topicsNames;
+public abstract class BaseSensorHandler implements SensorEventHandler {
+    private final KafkaEventProducer producer;
+
+    @Value("${topic.telemetry-sensors}")
+    private String topic;
 
     @Override
-    public void handle(SensorEvent event) {
-        if (event == null) {
-            throw new IllegalArgumentException("HubEvent cannot be null");
-        }
-        log.debug("instance check confirm hubId={}", event.getHubId());
-        SensorEventAvro avro = mapToAvroSensorEvent(event);
-        log.debug("map To avro confirm hubId={}", event.getHubId());
-        ProducerRecord<String, SpecificRecordBase> param = createProducerSendParam(event, avro);
-        log.debug("param created confirm hubId={}", event.getHubId());
-        producer.sendRecord(param);
-        log.debug("record send confirm hubId={}", event.getHubId());
+    public void handle(SensorEventProto event) {
+        SensorEventAvro sensorEventAvro = toAvro(event);
+        log.info("Send {}", sensorEventAvro);
+        producer.send(sensorEventAvro, event.getHubId(), mapTimestampToInstant(event), topic);
     }
 
-    @Override
-    public SensorEventType getMessageType() {
-        throw new UnsupportedOperationException("Метод должен быть переопределен в наследнике");
+    public abstract SensorEventAvro toAvro(SensorEventProto sensorEvent);
+
+    public Instant mapTimestampToInstant(SensorEventProto event) {
+        return Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos());
     }
-
-    protected SensorEventAvro buildSensorEventAvro(SensorEvent sensorEvent, T payloadAvro) {
-        return SensorEventAvro.newBuilder()
-                .setId(sensorEvent.getId())
-                .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp())
-                .setPayload(payloadAvro)
-                .build();
-    }
-
-    private ProducerRecord<String, SpecificRecordBase> createProducerSendParam(SensorEvent event, SensorEventAvro avro) {
-        return new ProducerRecord<>(topicsNames.getSensorsTopic(), null, event.getTimestamp().toEpochMilli(), event.getHubId(), avro);
-    }
-
-    protected abstract SpecificRecordBase mapToAvro(SensorEvent sensorEvent);
-
-    protected abstract SensorEventAvro mapToAvroSensorEvent(SensorEvent sensorEvent);
 }

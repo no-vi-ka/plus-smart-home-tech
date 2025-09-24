@@ -2,55 +2,29 @@ package ru.yandex.practicum.service.handler.hub;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.beans.factory.annotation.Value;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.KafkaEventProducer;
-import ru.yandex.practicum.kafka.config.KafkaTopicsNames;
-import ru.yandex.practicum.model.hub.HubEvent;
-import ru.yandex.practicum.model.hub.enums.HubEventType;
-import org.apache.kafka.clients.producer.ProducerRecord;
+
+import java.time.Instant;
 
 @Slf4j
 @RequiredArgsConstructor
-public abstract class BaseHubHandler<T extends SpecificRecordBase> implements HubEventHandler {
+public abstract class BaseHubHandler implements HubEventHandler {
+    private final KafkaEventProducer producer;
 
-    protected final KafkaEventProducer producer;
-    protected final KafkaTopicsNames topicsNames;
-
-    @Override
-    public void handle(HubEvent event) {
-
-        if (event == null) {
-            throw new IllegalArgumentException("HubEvent cannot be null");
-        }
-        log.debug("instance check confirm hubId={}", event.getHubId());
-        HubEventAvro avro = mapToAvroHubEvent(event);
-        log.debug("map To avro confirm hubId={}", event.getHubId());
-        ProducerRecord<String, SpecificRecordBase> param = createProducerSendParam(event, avro);
-        log.debug("param created confirm hubId={}", event.getHubId());
-        producer.sendRecord(param);
-        log.debug("record send confirm hubId={}", event.getHubId());
-    }
+    @Value("${topic.telemetry-hubs}")
+    private String topic;
 
     @Override
-    public HubEventType getMessageType() {
-        throw new UnsupportedOperationException("Метод должен быть переопределен в наследнике");
+    public void handle(HubEventProto event) {
+        producer.send(toAvro(event), event.getHubId(), mapTimestampToInstant(event), topic);
     }
 
-    protected HubEventAvro buildHubEventAvro(HubEvent hubEvent, T payloadAvro) {
-        return HubEventAvro.newBuilder()
-                .setHubId(hubEvent.getHubId())
-                .setTimestamp(hubEvent.getTimestamp())
-                .setPayload(payloadAvro)
-                .build();
+    public Instant mapTimestampToInstant(HubEventProto event) {
+        return Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos());
     }
 
-    private ProducerRecord<String, SpecificRecordBase> createProducerSendParam(HubEvent event, HubEventAvro avro) {
-        return new ProducerRecord<>(topicsNames.getHubsTopic(), null, event.getTimestamp().toEpochMilli(), event.getHubId(), avro);
-    }
-
-    protected abstract SpecificRecordBase mapToAvro(HubEvent hubEvent);
-
-    protected abstract HubEventAvro mapToAvroHubEvent(HubEvent hubEvent);
+    public abstract HubEventAvro toAvro(HubEventProto hubEvent);
 }
