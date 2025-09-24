@@ -125,6 +125,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
         if (value == null) {
             return null;
         }
+
         return value instanceof Integer
                 ? (Integer) value
                 : ((Boolean) value ? 1 : 0);
