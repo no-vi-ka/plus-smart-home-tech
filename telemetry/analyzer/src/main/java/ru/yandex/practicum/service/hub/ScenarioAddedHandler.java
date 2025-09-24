@@ -125,19 +125,8 @@ public class ScenarioAddedHandler implements HubEventHandler {
         if (value == null) {
             return null;
         }
-        if (value instanceof Integer) {
-            return (Integer) value;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Integer.valueOf((String) value);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        return null;
+        return value instanceof Integer
+                ? (Integer) value
+                : ((Boolean) value ? 1 : 0);
     }
 }
