@@ -30,27 +30,27 @@ public class ShoppingStoreController {
 
     @GetMapping
     public ProductPageDto getAllProducts(@RequestParam ProductCategory category, Pageable pageable) {
-        log.debug("Получен GET /api/v1/shopping-store запрос c категорией = {} и pageable = {}", category, pageable);
+        log.info("Получен GET /api/v1/shopping-store запрос c категорией = {} и pageable = {}", category, pageable);
         return storeService.getAllProducts(category, pageable);
     }
 
     @PutMapping
     public ProductDto createProduct(@Valid @RequestBody ProductDto productDto) {
-        log.debug("Получен PUT /api/v1/shopping-store запрос на добавление товара c productName = {}",
+        log.info("Получен PUT /api/v1/shopping-store запрос на добавление товара c productName = {}",
                 productDto.getProductName());
         return storeService.createProduct(productDto);
     }
 
     @PostMapping
     public ProductDto updateProduct(@Valid @RequestBody ProductDto productDto) {
-        log.debug("Получен PUT /api/v1/shopping-store запрос на обновление товара c productName = {}",
+        log.info("Получен PUT /api/v1/shopping-store запрос на обновление товара c productName = {}",
                 productDto.getProductName());
         return storeService.updateProduct(productDto);
     }
 
     @PostMapping("/removeProductFromStore")
     public Boolean removeProductById(@RequestBody UUID productId) {
-        log.debug("Получен POST /api/v1/shopping-store запрос на деактивацию товара с ID = {}", productId);
+        log.info("Получен POST /api/v1/shopping-store запрос на деактивацию товара с ID = {}", productId);
         return storeService.removeProductById(productId);
     }
 
@@ -67,7 +67,7 @@ public class ShoppingStoreController {
 
     @GetMapping("/{productId}")
     public ProductDto getProductById(@PathVariable UUID productId) {
-        log.debug("Получен GET /api/v1/shopping-store запрос на получение информации о товаре с ID = {}", productId);
+        log.info("Получен GET /api/v1/shopping-store запрос на получение информации о товаре с ID = {}", productId);
         return storeService.getProductById(productId);
     }
 }

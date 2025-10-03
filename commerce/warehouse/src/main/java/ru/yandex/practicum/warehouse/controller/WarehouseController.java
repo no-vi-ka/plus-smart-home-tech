@@ -27,31 +27,31 @@ public class WarehouseController {
 
     @PutMapping
     public void newProduct(@Valid @RequestBody NewProductInWarehouseRequest newRequest) {
-        log.debug("Начинаем добавление нового продукта = {}", newRequest);
+        log.info("Начинаем добавление нового продукта = {}", newRequest);
         warehouseService.newProduct(newRequest);
-        log.debug("Новый продукт добавлен УСПЕШНО = {}", newRequest);
+        log.info("Новый продукт добавлен УСПЕШНО = {}", newRequest);
     }
 
     @PostMapping("/check")
     public BookedProductsDto checkProducts(@Valid @RequestBody ShoppingCartDto shoppingCartDto) {
-        log.debug("Начинаем проверку кол-ва товаров на складе={}", shoppingCartDto);
+        log.info("Начинаем проверку кол-ва товаров на складе={}", shoppingCartDto);
         BookedProductsDto result = warehouseService.checkQuantityProducts(shoppingCartDto);
-        log.debug("Проверка кол-ва товара на складе прошла УСПЕШНО = {}, result = {}", shoppingCartDto, result);
+        log.info("Проверка кол-ва товара на складе прошла УСПЕШНО = {}, result = {}", shoppingCartDto, result);
         return result;
     }
 
     @PostMapping("/add")
     public void addProduct(@Valid @RequestBody AddProductToWarehouseRequest addRequest) {
-        log.debug("Принимаем товар на склад = {}", addRequest);
+        log.info("Принимаем товар на склад = {}", addRequest);
         warehouseService.addQuantityProduct(addRequest);
-        log.debug("Товар принят УСПЕШНО = {}", addRequest);
+        log.info("Товар принят УСПЕШНО = {}", addRequest);
     }
 
     @GetMapping("/address")
     public AddressDto getAddress() {
-        log.debug("Запрашиваем адрес склада");
+        log.info("Запрашиваем адрес склада");
         AddressDto result = warehouseService.getAddress();
-        log.debug("Адрес склада  УСПЕШНО предоставлен = {}", result);
+        log.info("Адрес склада  УСПЕШНО предоставлен = {}", result);
         return result;
     }
 }

@@ -33,21 +33,21 @@ public class ShoppingCartController {
 
     @GetMapping
     public ShoppingCartDto getShoppingCart(@RequestParam String username) {
-        log.debug("Получен GET /api/v1/shopping-cart запрос на получение корзины пользователя {}", username);
+        log.info("Получен GET /api/v1/shopping-cart запрос на получение корзины пользователя {}", username);
         return cartService.getShoppingCart(username);
     }
 
     @PutMapping
     public ShoppingCartDto addProductInCart(@RequestParam String username,
                                             @RequestBody @NotEmpty Map<UUID, @NotNull @Positive Integer> products) {
-        log.debug("Получен PUT /api/v1/shopping-cart запрос: с параметром username = {} и телом newProducts = {}",
+        log.info("Получен PUT /api/v1/shopping-cart запрос: с параметром username = {} и телом newProducts = {}",
                 username, products);
         return cartService.addProductInCart(username, products);
     }
 
     @DeleteMapping
     public void deactivationShoppingCart(@RequestParam String username) {
-        log.debug("Получен DELETE /api/v1/shopping-cart запрос на деактивацию корзины товаров пользователя {}", username);
+        log.info("Получен DELETE /api/v1/shopping-cart запрос на деактивацию корзины товаров пользователя {}", username);
         cartService.deactivationShoppingCart(username);
     }
 
@@ -55,7 +55,7 @@ public class ShoppingCartController {
     @PostMapping("/remove")
     public ShoppingCartDto removeProductFromCart(@RequestParam String username,
                                                  @RequestBody @NotEmpty List<UUID> productsIds) {
-        log.debug("Получен POST /api/v1/shopping-cart запрос на удаление продуктов {} из корзины пользователя {}",
+        log.info("Получен POST /api/v1/shopping-cart запрос на удаление продуктов {} из корзины пользователя {}",
                 productsIds, username);
         return cartService.removeProductFromCart(username, productsIds);
     }
@@ -63,7 +63,7 @@ public class ShoppingCartController {
     @PostMapping("change-quantity")
     public ShoppingCartDto changeQuantityInCart(@RequestParam String username,
                                                 @Valid @RequestBody ChangeProductQuantityRequest quantityRequest) {
-        log.debug("Получен POST /api/v1/shopping-cart запрос на изменение количества товара в корзине пользователя {}", username);
+        log.info("Получен POST /api/v1/shopping-cart запрос на изменение количества товара в корзине пользователя {}", username);
         return cartService.changeQuantityInCart(username, quantityRequest);
     }
 }
