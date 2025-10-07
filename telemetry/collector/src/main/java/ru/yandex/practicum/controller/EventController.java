@@ -9,9 +9,9 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-
-import ru.yandex.practicum.service.handler.hub.HubEventHandler;
-import ru.yandex.practicum.service.handler.sensor.SensorEventHandler;
+import ru.yandex.practicum.mapper.proto.hubs.HubEventProtoMapper;
+import ru.yandex.practicum.mapper.proto.sensors.SensorEventProtoMapper;
+import ru.yandex.practicum.service.EventService;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,52 +21,63 @@ import java.util.stream.Collectors;
 @Slf4j
 @GrpcService
 public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
+    private final Map<SensorEventProto.PayloadCase, SensorEventProtoMapper> sensorEventMappers;
+    private final Map<HubEventProto.PayloadCase, HubEventProtoMapper> hubEventMappers;
+    private final EventService eventService;
 
-    private final Map<HubEventProto.PayloadCase, HubEventHandler> hubMapHandlers;
-    private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorMapHandlers;
-
-
-    public EventController(Set<HubEventHandler> hubSetHandlers, Set<SensorEventHandler> sensorSetHandlers) {
-        this.hubMapHandlers = hubSetHandlers.stream()
+    public EventController(Set<SensorEventProtoMapper> sensorEventMappers,
+                           Set<HubEventProtoMapper> hubEventMappers,
+                           EventService eventService) {
+        this.sensorEventMappers = sensorEventMappers.stream()
                 .collect(Collectors.toMap(
-                        HubEventHandler::getMessageHubType,
+                        SensorEventProtoMapper::getMessageType,
                         Function.identity()
                 ));
-        this.sensorMapHandlers = sensorSetHandlers.stream()
+        this.hubEventMappers = hubEventMappers.stream()
                 .collect(Collectors.toMap(
-                        SensorEventHandler::getMessageSensorType,
+                        HubEventProtoMapper::getMessageType,
                         Function.identity()
                 ));
-
+        this.eventService = eventService;
     }
 
     @Override
-    public void collectHubEvent(HubEventProto hubProto, StreamObserver<Empty> responseObserver) {
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         try {
-            if (hubMapHandlers.containsKey(hubProto.getPayloadCase())) {
-                hubMapHandlers.get(hubProto.getPayloadCase()).handle(hubProto);
+            log.info("Получен запрос: \n" + request.getAllFields());
+            if (sensorEventMappers.containsKey(request.getPayloadCase())) {
+                eventService.collectSensorEvent(sensorEventMappers.get(request.getPayloadCase()).map(request));
             } else {
-                throw new IllegalArgumentException("Не могу найти обработчик для HUB " + hubProto.getPayloadCase());
+                throw new IllegalArgumentException("Не могу найти обработчик для события " + request.getPayloadCase());
             }
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(Status.fromThrowable(e)));
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
+            ));
         }
     }
 
     @Override
-    public void collectSensorEvent(SensorEventProto sensorProto, StreamObserver<Empty> responseObserver) {
+    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
         try {
-            if (sensorMapHandlers.containsKey(sensorProto.getPayloadCase())) {
-                sensorMapHandlers.get(sensorProto.getPayloadCase()).handle(sensorProto);
+            log.info("Получен запрос: \n" + request.getAllFields());
+            if (hubEventMappers.containsKey(request.getPayloadCase())) {
+                eventService.collectHubEvent(hubEventMappers.get(request.getPayloadCase()).map(request));
             } else {
-                throw new IllegalArgumentException("Не могу найти обработчик для SENSOR " + sensorProto.getPayloadCase());
+                throw new IllegalArgumentException("Не могу найти обработчик для события " + request.getPayloadCase());
             }
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(Status.fromThrowable(e)));
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL
+                            .withDescription(e.getLocalizedMessage())
+                            .withCause(e)
+            ));
         }
     }
 }
