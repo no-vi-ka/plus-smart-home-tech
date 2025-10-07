@@ -20,23 +20,23 @@ public class ProductDto {
 
     UUID productId;
 
-    @NotBlank(message = "productName не может быть NULL или EMPTY.")
+    @NotBlank
     String productName;
 
     String imageSrc;
 
-    @NotNull(message = "quantityState не может быть NULL.")
+    @NotNull
     QuantityState quantityState;
 
-    @NotNull(message = "productState не может быть NULL.")
+    @NotNull
     ProductState productState;
 
     ProductCategory productCategory;
 
     @Min(1)
-    @NotNull(message = "price не может быть NULL.")
+    @NotNull
     Float price;
 
-    @NotBlank(message = "description не может быть NULL или EMPTY.")
+    @NotBlank
     String description;
 }

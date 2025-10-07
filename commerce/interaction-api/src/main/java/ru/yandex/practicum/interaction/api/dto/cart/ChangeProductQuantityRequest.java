@@ -12,9 +12,9 @@ import java.util.UUID;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChangeProductQuantityRequest {
-    @NotNull(message = "productID не может быть NULL.")
+    @NotNull
     UUID productId;
 
-    @NotNull(message = "newQuantity не может быть NULL.")
+    @NotNull
     Integer newQuantity;
 }
