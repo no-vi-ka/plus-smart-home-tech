@@ -34,20 +34,22 @@ services:
                              --bootstrap-server kafka:29092'"
     init: true
 
-  db:
+  analyzer-db:
     image: postgres:16.1
-    container_name: postgres-smart-home
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+    container_name: analyzer
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=user
-      - POSTGRES_DB=smarthome
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
+      - POSTGRES_DB=analyzer
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  shopping_cart-db:
+    image: postgres:16.1
+    container_name: shopping_cart
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=shopping_cart
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

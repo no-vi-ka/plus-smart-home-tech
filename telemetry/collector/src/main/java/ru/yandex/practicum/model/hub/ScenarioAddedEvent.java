@@ -12,15 +12,15 @@ import java.util.List;
 @Setter
 @ToString(callSuper = true)
 public class ScenarioAddedEvent extends HubEvent {
-    @NotBlank
-    private String name;
-    @NotEmpty
-    private List<ScenarioCondition> conditions;
-    @NotEmpty
-    private List<DeviceAction> actions;
+	@NotBlank
+	private String name;
+	@NotEmpty
+	private List<ScenarioCondition> conditions;
+	@NotEmpty
+	private List<DeviceAction> actions;
 
-    @Override
-    public HubEventType getType() {
-        return HubEventType.SCENARIO_ADDED;
-    }
+	@Override
+	public HubEventType getType() {
+		return HubEventType.SCENARIO_ADDED;
+	}
 }

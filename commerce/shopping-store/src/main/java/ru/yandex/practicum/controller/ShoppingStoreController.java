@@ -1,62 +1,66 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.dto.ProductCategory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.dto.PageableDto;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.dto.SetProductQuantityStateRequest;
-import ru.yandex.practicum.feign.ShoppingStoreOperations;
 import ru.yandex.practicum.service.ShoppingStoreService;
 
+import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @RestController
+@RequestMapping("/api/v1/store")
 @RequiredArgsConstructor
-@RequestMapping(path = "/api/v1/shopping-store")
-public class ShoppingStoreController implements ShoppingStoreOperations {
-    private final ShoppingStoreService shoppingService;
+public class ShoppingStoreController {
 
-    @Override
-    public Page<ProductDto> searchProducts(ProductCategory category, Pageable params) {
-        log.info("Получен запрос на поиск товаров по категории: {}", category);
-        return shoppingService.getProductsByCategory(category, params);
+    private static final String CATEGORY_PARAM = "category";
+    private static final String PAGEABLE_PARAM = "pageableDto";
+    private static final String PRODUCT_ID_PARAM = "productId";
+
+    private final ShoppingStoreService shoppingStoreService;
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<ProductDto> getProducts(
+            @RequestParam(name = CATEGORY_PARAM) ProductDto.ProductCategory category,
+            @Valid @RequestParam(name = PAGEABLE_PARAM) PageableDto pageableDto) {
+        return shoppingStoreService.getProductsByCategory(category, pageableDto);
     }
 
-    @Override
-    public ProductDto addProduct(ProductDto product) {
-        log.info("Получен запрос на добавление товара");
-        return shoppingService.addProduct(product);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductDto createNewProduct(
+            @Valid @RequestBody ProductDto productDto) {
+        return shoppingStoreService.createNewProduct(productDto);
     }
 
-    @Override
-    public ProductDto getProductById(UUID productId) {
-        log.info("Получен запрос на получение товара по ID: {}", productId);
-        return shoppingService.findProductById(productId);
+    @PostMapping
+    ProductDto updateProduct(@RequestBody ProductDto productDto)  {
+        return shoppingStoreService.updateProduct(productDto);
     }
 
-    @Override
-    public ProductDto updateProduct(ProductDto product) {
-        log.info("Получен запрос на обновление информации о товаре с ID: {}", product.getProductId());
-        return shoppingService.updateProduct(product);
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeProductFromStore(
+            @RequestParam("PRODUCT_ID_PARAM") UUID productId) {
+        shoppingStoreService.removeProductFromStore(productId);
     }
 
-    @Override
-    public boolean removeProduct(UUID productId) {
-        log.info("Получен запрос на удаление информации о товаре с ID: {}", productId);
-        shoppingService.removeProductFromStore(productId);
-        return true;
+    @PostMapping("/quantity-state")
+    @ResponseStatus(HttpStatus.OK)
+    public void setProductQuantityState(
+            @Valid @RequestBody SetProductQuantityStateRequest request) {
+        shoppingStoreService.setProductQuantityState(request);
     }
 
-
-    @Override
-    public boolean updateProductQuantity(SetProductQuantityStateRequest request) {
-        log.info("Получен запрос на измененине информации о количестве товара с ID: {}", request.getProductId());
-        shoppingService.setProductQuantityState(request);
-        return true;
+    @GetMapping("/{productId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ProductDto getProduct(
+            @PathVariable(PRODUCT_ID_PARAM) UUID productId) {
+        return shoppingStoreService.getProduct(productId);
     }
 }

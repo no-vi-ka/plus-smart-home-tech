@@ -1,29 +1,58 @@
 package ru.yandex.practicum.dto;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Builder
 public class ProductDto {
-    private UUID productId;
+
+    UUID productId;
+
+    @NotBlank
+    String productName;
+    @NotBlank
+    String description;
+
+    String imageSrc;
+
     @NotNull
-    @Size(min = 1)
-    private String productName;
+    SetProductQuantityStateRequest.QuantityState quantityState;
+
     @NotNull
-    @Size(min = 1)
-    private String description;
-    private String imageSrc;
-    private QuantityState quantityState;
-    private ProductState productState;
-    private Double rating;
+    ProductState productState;
+
+    @DecimalMin(value = "1.0")
+    @DecimalMax(value = "5.0")
+    Double rating;
+
+    @NotNull
     private ProductCategory productCategory;
-    @NotNull
-    private Double price;
+
+    @DecimalMin(value = "1.0")
+    Double price;
+
+    public enum ProductCategory {
+        LIGHTING,
+        CONTROL,
+        SENSORS
+    }
+
+    public enum ProductState {
+        ACTIVE,
+        DEACTIVATE
+    }
 }

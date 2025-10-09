@@ -4,15 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+@ToString(callSuper = true)
 @Getter
 @Setter
-@ToString(callSuper = true)
 public class TemperatureSensorEvent extends SensorEvent {
-    private int temperatureC;
-    private int temperatureF;
+	private int temperatureC;
+	private int temperatureF;
 
-    @Override
-    public SensorEventType getType() {
-        return SensorEventType.TEMPERATURE_SENSOR_EVENT;
-    }
+	@Override
+	public SensorEventType getType() {
+		return SensorEventType.TEMPERATURE_SENSOR_EVENT;
+	}
 }

@@ -4,62 +4,74 @@ import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import ru.yandex.practicum.grpc.HubService;
-import ru.yandex.practicum.grpc.SensorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
-import ru.yandex.practicum.kafka.KafkaProducerService;
-import ru.yandex.practicum.model.EventType;
-import ru.yandex.practicum.model.hub.HubEvent;
-import ru.yandex.practicum.model.sensor.SensorEvent;
+import ru.yandex.practicum.service.handler.HubHandler;
+import ru.yandex.practicum.service.handler.SensorHandler;
 
-@Slf4j
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @GrpcService
-@RequiredArgsConstructor
 public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
-    private final SensorService sensorService;
-    private final HubService hubService;
-    private final KafkaProducerService kafkaProducerService;
 
-    @Override
-    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
-        try {
-            SensorEvent event = sensorService.map(request);
-            kafkaProducerService.sendMessage(event, EventType.SENSOR_EVENT, event.getHubId());
-            log.info("Получено событие датчика: " + event.getType());
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
-        } catch (Exception e) {
-            log.error("Ошибка при получении события от датчика: {}", e.getMessage());
-            responseObserver.onError(new StatusRuntimeException(
-                    Status.INTERNAL
-                            .withDescription(e.getLocalizedMessage())
-                            .withCause(e)
-            ));
-        }
+    private static final Logger log = LoggerFactory.getLogger(EventController.class);
+
+    private final Map<HubEventProto.PayloadCase, HubHandler> hubEventHandlerMap;
+    private final Map<SensorEventProto.PayloadCase, SensorHandler> sensorEventHandlerMap;
+
+    public EventController(Set<HubHandler> hubHandlers, Set<SensorHandler> sensorHandlers) {
+        this.hubEventHandlerMap = hubHandlers.stream()
+                .collect(Collectors.toMap(HubHandler::getMessageType, Function.identity()));
+        this.sensorEventHandlerMap = sensorHandlers.stream()
+                .collect(Collectors.toMap(SensorHandler::getMessageType, Function.identity()));
     }
 
     @Override
     public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
         try {
-            HubEvent event = hubService.map(request);
-            kafkaProducerService.sendMessage(event, EventType.HUB_EVENT, event.getHubId());
-            log.info("Получено событие от хаба: " + event.getType());
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
+            log.info("Received Hub event: {}", request);
+            HubHandler handler = hubEventHandlerMap.get(request.getPayloadCase());
+            if (handler != null) {
+                handler.handle(request);
+                responseObserver.onNext(Empty.getDefaultInstance());
+                responseObserver.onCompleted();
+            } else {
+                log.warn("No handler found for Hub event type: {}", request.getPayloadCase());
+                responseObserver.onError(new StatusRuntimeException(
+                        Status.INVALID_ARGUMENT.withDescription("No handler for this event type")));
+            }
         } catch (Exception e) {
-            log.error("Ошибка при получении события хаба: {}", e.getMessage());
+            log.error("Error handling Hub event", e);
             responseObserver.onError(new StatusRuntimeException(
-                    Status.INTERNAL
-                            .withDescription(e.getLocalizedMessage())
-                            .withCause(e)
-            ));
+                    Status.INTERNAL.withDescription(e.getMessage()).withCause(e)));
         }
     }
 
+    @Override
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+        try {
+            log.info("Received Sensor event: {}", request);
+            SensorHandler handler = sensorEventHandlerMap.get(request.getPayloadCase());
+            if (handler != null) {
+                handler.handle(request);
+                responseObserver.onNext(Empty.getDefaultInstance());
+                responseObserver.onCompleted();
+            } else {
+                log.warn("No handler found for Sensor event type: {}", request.getPayloadCase());
+                responseObserver.onError(new StatusRuntimeException(
+                        Status.INVALID_ARGUMENT.withDescription("No handler for this event type")));
+            }
+        } catch (Exception e) {
+            log.error("Error handling Sensor event", e);
+            responseObserver.onError(new StatusRuntimeException(
+                    Status.INTERNAL.withDescription(e.getMessage()).withCause(e)));
+        }
+    }
 }
-

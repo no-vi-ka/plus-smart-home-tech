@@ -9,11 +9,11 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 public class ScenarioRemovedEvent extends HubEvent {
-    @NotBlank
-    private String name;
+	@NotBlank
+	private String name;
 
-    @Override
-    public HubEventType getType() {
-        return HubEventType.SCENARIO_REMOVED;
-    }
+	@Override
+	public HubEventType getType() {
+		return HubEventType.SCENARIO_REMOVED;
+	}
 }

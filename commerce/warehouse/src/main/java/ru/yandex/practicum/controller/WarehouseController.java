@@ -1,43 +1,62 @@
 package ru.yandex.practicum.controller;
 
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.dto.*;
-import ru.yandex.practicum.feign.WarehouseOperations;
+import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.service.WarehouseService;
+import ru.yandex.practicum.dto.AddProductToWarehouseRequest;
+import ru.yandex.practicum.dto.AddressDto;
+import ru.yandex.practicum.dto.AssemblyProductForOrderFromShoppingCartRequest;
+import ru.yandex.practicum.dto.BookedProductDto;
+import ru.yandex.practicum.dto.NewProductInWarehouseRequest;
+
+import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/warehouse")
-public class WarehouseController implements WarehouseOperations {
+@RequiredArgsConstructor
+public class WarehouseController {
+
     private final WarehouseService warehouseService;
 
-    @Override
-    public void addProductToWarehouse(@Valid @RequestBody NewProductInWarehouseRequest request) {
-        log.info("Получен запрос на добавление товара {} в базу", request.getProductId());
-        warehouseService.addNewProductToWarehouse(request);
+    @PutMapping
+    public void addNewProduct(@RequestBody @Valid NewProductInWarehouseRequest request) {
+        warehouseService.addNewProduct(request);
     }
 
-    @Override
-    public BookedProductsDto checkShoppingCart(ShoppingCartDto shoppingCartDto) {
-        log.info("Получен запрос на проверку корзины товаров c ID: {}", shoppingCartDto.getShoppingCartId());
-        return warehouseService.checkShoppingCart(shoppingCartDto);
+    @PostMapping("/return")
+    public void acceptReturn(@RequestBody Map<UUID, Integer> products) {
+        warehouseService.acceptReturn(products);
     }
 
-    @Override
-    public void increaseProductQuantity(AddProductToWarehouseRequest request) {
-        log.info("Получен запрос на увеличение количества товара с ID: {} на {} единиц", request.getProductId(), request.getQuantity());
-        warehouseService.increaseProductQuantity(request);
+    @PostMapping("/booking")
+    public BookedProductDto bookProductForShoppingCart(@RequestBody @Valid ShoppingCartDto cartDto) {
+        return warehouseService.bookProductForShoppingCart(cartDto);
     }
 
-    @Override
+    @PostMapping("/assembly")
+    public BookedProductDto assemblyProductForOrderFromShoppingCart(
+            @RequestBody @Valid AssemblyProductForOrderFromShoppingCartRequest request) {
+        return warehouseService.assemblyProductForOrderFromShoppingCart(request);
+    }
+
+    @PostMapping("/add")
+    public void addProductQuantity(@RequestBody @Valid AddProductToWarehouseRequest request) {
+        warehouseService.addProductQuantity(request);
+    }
+
+    @GetMapping("/address")
     public AddressDto getWarehouseAddress() {
-        log.info("Получен запрос на выдачу адреса склада");
         return warehouseService.getWarehouseAddress();
     }
 

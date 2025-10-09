@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: collector
+
+kafka:
+  bootstrapServer: localhost:9092
+
+grpc:
+  server:
+    port: 59091

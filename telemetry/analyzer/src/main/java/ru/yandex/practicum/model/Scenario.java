@@ -1,37 +1,47 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Entity
-@Table(name = "scenarios")
-@Getter @Setter @NoArgsConstructor
+@Table(name = "scenarios", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"hub_id", "name"})
+})
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Scenario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "hub_id", nullable = false)
     private String hubId;
+
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "scenario_actions",
-            joinColumns = @JoinColumn(name = "scenario_id"),
-            inverseJoinColumns = @JoinColumn(name = "action_id")
-    )
-    @MapKeyColumn(name = "sensor_id")
-    private Map<String, Action> actions = new HashMap<>();
+    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Condition> conditions;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(
-            name = "scenario_conditions",
-            joinColumns = @JoinColumn(name = "scenario_id"),
-            inverseJoinColumns = @JoinColumn(name = "condition_id")
-    )
-    @MapKeyColumn(name = "sensor_id")
-    private Map<String, Condition> conditions = new HashMap<>();
+    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<Action> actions;
 }
