@@ -1,18 +1,21 @@
 package ru.yandex.practicum.model.sensor;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
+import ru.yandex.practicum.model.sensor.enums.SensorEventType;
 
-@ToString(callSuper = true)
 @Getter
 @Setter
 public class TemperatureSensorEvent extends SensorEvent {
-	private int temperatureC;
-	private int temperatureF;
+    @NotNull
+    private Integer temperatureC;
 
-	@Override
-	public SensorEventType getType() {
-		return SensorEventType.TEMPERATURE_SENSOR_EVENT;
-	}
+    @NotNull
+    private Integer temperatureF;
+
+    @Override
+    public SensorEventType getType() {
+        return SensorEventType.TEMPERATURE_SENSOR_EVENT;
+    }
 }

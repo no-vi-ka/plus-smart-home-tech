@@ -4,22 +4,25 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "sensors")
-@Data
+@Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Sensor {
-
     @Id
-    private String id;
+    @Column(name = "id")
+    String id;
 
-    @Column(name = "hub_id", nullable = false)
-    private String hubId;
+    @Column(name = "hub_id")
+    String hubId;
 }

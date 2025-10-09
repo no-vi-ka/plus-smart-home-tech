@@ -4,47 +4,42 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
 @Entity
 @Table(name = "conditions")
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Condition {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "id")
+    Long id;
 
+    @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private ConditionType type;
+    ConditionTypeAvro type;
 
+    @Column(name = "operation")
     @Enumerated(EnumType.STRING)
-    @Column(name = "operation", nullable = false)
-    private ConditionOperation operation;
+    ConditionOperationAvro operation;
 
     @Column(name = "value")
-    private Integer value;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scenario_id", nullable = false)
-    @ToString.Exclude
-    private Scenario scenario;
-
-    @Column(name = "sensor_id", nullable = false)
-    private String sensorId;
+    Integer value;
 }
