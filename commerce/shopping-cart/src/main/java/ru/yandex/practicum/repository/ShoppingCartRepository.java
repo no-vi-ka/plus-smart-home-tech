@@ -1,20 +1,14 @@
 package ru.yandex.practicum.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.model.ShoppingCart;
+import ru.yandex.practicum.model.ShoppingCartState;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, UUID> {
-
-    Optional<ShoppingCart> findByUserName(String userName);
-
-    @Transactional
-    @Modifying
-    void deleteByUserName(String userName);
-
-    boolean existsByUserName(String userName);
+    Optional<ShoppingCart> findByUsernameAndState(String username, ShoppingCartState shoppingCartState);
 }

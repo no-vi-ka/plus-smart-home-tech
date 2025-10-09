@@ -1,65 +1,52 @@
 package ru.yandex.practicum.controller;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.client.ShoppingCartClient;
-import ru.yandex.practicum.dto.BookedProductsDto;
 import ru.yandex.practicum.dto.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.feign.ShoppingCartOperations;
 import ru.yandex.practicum.service.ShoppingCartService;
-import ru.yandex.practicum.utils.ValidationUtil;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Validated
+@Slf4j
 @RestController
-@RequestMapping("/api/v1/shopping-cart")
 @RequiredArgsConstructor
-public class ShoppingCartController implements ShoppingCartClient {
+@RequestMapping(path = "/api/v1/shopping-cart")
+public class ShoppingCartController implements ShoppingCartOperations {
     private final ShoppingCartService shoppingCartService;
 
     @Override
-    public ShoppingCartDto getCart(
-            @NotBlank(message = ValidationUtil.VALIDATION_USERNAME_MESSAGE) String userName) {
-        return shoppingCartService.getCart(userName);
+    public ShoppingCartDto getUsersShoppingCart(String username) {
+        log.info("Получен запрос на выдачу корзины пользователя: {}", username);
+        return shoppingCartService.getUsersShoppingCart(username);
     }
 
     @Override
-    public ShoppingCartDto addProducts(
-            @NotBlank(message = ValidationUtil.VALIDATION_USERNAME_MESSAGE) String userName,
-            Map<UUID, @NotNull Long> products) {
-        return shoppingCartService.addProducts(userName, products);
+    public ShoppingCartDto addProductToShoppingCart(String username, Map<UUID, Integer> products) {
+        log.info("Получен запрос на добавление товара в корзину");
+        return shoppingCartService.addProductToShoppingCart(username, products);
     }
 
     @Override
-    public void clearCart(@NotBlank(message = ValidationUtil.VALIDATION_USERNAME_MESSAGE) String userName) {
-        shoppingCartService.clearCart(userName);
+    public void deactivateShoppingCart(String username) {
+        log.info("Получен запрос на деактивацию корзины пользователя: {}", username);
+        shoppingCartService.deactivateShoppingCart(username);
     }
 
     @Override
-    public ShoppingCartDto removeProducts(@NotBlank(message = ValidationUtil.VALIDATION_USERNAME_MESSAGE)
-                                                      String userName,
-                                                  List<UUID> products) {
-        return shoppingCartService.removeProducts(userName, products);
+    public ShoppingCartDto removeProductFromShoppingCart(String username, List<UUID> products) {
+        log.info("Получен запрос на удаление товаров из корзины пользователя: {}", username);
+        return shoppingCartService.removeProductsFromShoppingCart(username, products);
     }
 
     @Override
-    public ShoppingCartDto updateQuantity(@NotBlank(message = ValidationUtil.VALIDATION_USERNAME_MESSAGE)
-                                                     String userName,
-                                                 @Valid ChangeProductQuantityRequest request) {
-        return shoppingCartService.updateQuantity(userName, request);
-    }
-
-    @Override
-    public BookedProductsDto bookProducts(
-            @NotBlank(message = ValidationUtil.VALIDATION_USERNAME_MESSAGE) String userName) {
-        return shoppingCartService.bookProducts(userName);
+    public ShoppingCartDto changeProductQuantityInCart(String username, ChangeProductQuantityRequest request) {
+        log.info("Получен запрос на изменение количества товара в корзине пользователя: {}", username);
+        return shoppingCartService.changeProductQuantityInCart(username, request);
     }
 }

@@ -1,11 +1,11 @@
-CREATE TABLE IF NOT EXISTS products (
-    product_id       UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    name             varchar(200) NOT NULL,
-    description      varchar(2000) NOT NULL,
-    image_src        varchar(1000),
-    quantity_state   varchar(20) NOT NULL,
-    product_state    varchar(20) NOT NULL,
-    rating           DOUBLE PRECISION,
-    category         varchar(20),
-    price            DOUBLE PRECISION
+CREATE TABLE IF NOT EXISTS product (
+                                       product_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                       product_name VARCHAR(255) NOT NULL,
+                                       description VARCHAR(255),
+                                       image_src VARCHAR(255),
+                                       quantity_state VARCHAR(50),
+                                       product_state VARCHAR(50),
+                                       rating DOUBLE PRECISION NOT NULL,
+                                       product_category VARCHAR(50),
+                                       price DOUBLE PRECISION NOT NULL
 );

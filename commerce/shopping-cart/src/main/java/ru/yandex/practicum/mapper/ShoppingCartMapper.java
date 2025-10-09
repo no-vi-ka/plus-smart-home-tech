@@ -1,15 +1,18 @@
 package ru.yandex.practicum.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.yandex.practicum.dto.ShoppingCartDto;
 import ru.yandex.practicum.model.ShoppingCart;
 
-@Mapper(componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface ShoppingCartMapper {
+import java.util.HashMap;
 
-    @Mapping(target = "products", source = "items")
-    ShoppingCartDto map(ShoppingCart entity);
+public class ShoppingCartMapper {
+    public static ShoppingCartDto mapToShoppingCartDto(ShoppingCart cart) {
+        if (cart == null) {
+            return null;
+        }
+        return new ShoppingCartDto(
+                cart.getShoppingCartId(),
+                cart.getProducts() != null ? new HashMap<>(cart.getProducts()) : new HashMap<>()
+        );
+    }
 }

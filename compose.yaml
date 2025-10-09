@@ -36,35 +36,16 @@ services:
 
   db:
     image: postgres:16.1
-    container_name: postgres-analyzer
+    container_name: postgres-smart-home
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
-      - "5433:5432"
+      - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=analyzer
-      - POSTGRES_USER=analyzer
-      - POSTGRES_DB=analyzer
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
-
-  store-db:
-    image: postgres:16.1
-    container_name: postgres-commerce
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "6432:5432"
-    environment:
-      - POSTGRES_PASSWORD=commerce
-      - POSTGRES_USER=commerce
-#      - POSTGRES_DB=shopping_cart
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=smarthome
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s

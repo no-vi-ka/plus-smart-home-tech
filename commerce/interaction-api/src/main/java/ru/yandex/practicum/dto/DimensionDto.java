@@ -1,22 +1,18 @@
 package ru.yandex.practicum.dto;
 
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.DecimalMin;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DimensionDto {
-    @NotNull(message = "Width must be specified")
-    @Positive(message = "Width must be positive")
-    private Double width;
-    
-    @NotNull(message = "Height must be specified")
-    @Positive(message = "Height must be positive")
-    private Double height;
-    
-    @NotNull(message = "Depth must be specified")
-    @Positive(message = "Depth must be positive")
-    private Double depth;
+    @DecimalMin(value = "1")
+    private double width;
+    @DecimalMin(value = "1")
+    private double height;
+    @DecimalMin(value = "1")
+    private double depth;
 }

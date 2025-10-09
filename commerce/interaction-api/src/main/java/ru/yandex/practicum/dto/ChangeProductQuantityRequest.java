@@ -11,9 +11,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChangeProductQuantityRequest {
-    @NotNull(message = "Product ID cannot be null")
+    @NotNull
     private UUID productId;
-
-    @NotNull(message = "Quantity cannot be null")
-    private Long newQuantity;
+    @NotNull
+    private Integer newQuantity;
 }

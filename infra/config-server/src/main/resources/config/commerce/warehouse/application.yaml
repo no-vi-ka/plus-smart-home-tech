@@ -1,28 +1,20 @@
+server:
+  port: 0
+
 spring:
+  application:
+    name: warehouse
   jpa:
-    show-sql: true
     hibernate:
-      dialect: org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
   sql:
     init:
       mode: always
-  output:
-    ansi:
-      enabled: ALWAYS
   datasource:
+    username: user
+    password: password
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6432/warehouse
-    username: commerce
-    password: commerce
-
-logging:
-  level:
-    "org.springframework.orm.jpa": INFO
-    "org.springframework.transaction": INFO
-    "org.springframework.transaction.interceptor": INFO
-    "org.springframework.orm.jpa.JpaTransactionManager": INFO
-    "org.hibernate.SQL": INFO
-    "org.hibernate.orm.jdbc.bind": INFO
-
-server:
-  port: 0
+    url: jdbc:postgresql://localhost:5432/smarthome

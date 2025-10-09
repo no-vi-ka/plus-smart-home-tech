@@ -1,22 +1,34 @@
 package ru.yandex.practicum.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.yandex.practicum.dto.ProductDto;
 import ru.yandex.practicum.model.Product;
 
-@Mapper(componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface ProductMapper {
+public class ProductMapper {
+    public static ProductDto mapToProductDto(Product product) {
+        ProductDto productDto = new ProductDto();
+        productDto.setProductId(product.getProductId());
+        productDto.setProductName(product.getProductName());
+        productDto.setDescription(product.getDescription());
+        productDto.setImageSrc(product.getImageSrc());
+        productDto.setQuantityState(product.getQuantityState());
+        productDto.setProductState(product.getProductState());
+        productDto.setRating(product.getRating());
+        productDto.setProductCategory(product.getProductCategory());
+        productDto.setPrice(product.getPrice());
+        return productDto;
+    }
 
-    Product map(ProductDto dto);
-
-    @Mapping(target = "productId", ignore = false)
-    ProductDto map(Product entity);
-
-    @Mapping(target = "productId", ignore = true)
-    void update(ProductDto productDto,
-                @MappingTarget Product product);
+    public static Product mapToProduct(ProductDto productDto) {
+        Product product = new Product();
+        product.setProductId(productDto.getProductId());
+        product.setProductName(productDto.getProductName());
+        product.setDescription(productDto.getDescription());
+        product.setImageSrc(productDto.getImageSrc());
+        product.setQuantityState(productDto.getQuantityState());
+        product.setProductState(productDto.getProductState());
+        product.setRating(productDto.getRating() == null ? 0 : productDto.getRating());
+        product.setProductCategory(productDto.getProductCategory());
+        product.setPrice(productDto.getPrice());
+        return product;
+    }
 }
