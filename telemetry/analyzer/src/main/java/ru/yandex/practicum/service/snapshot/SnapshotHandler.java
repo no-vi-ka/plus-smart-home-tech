@@ -1,107 +1,102 @@
 package ru.yandex.practicum.service.snapshot;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.clientGrpc.HubRouterClient;
-import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorStateAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
+import ru.yandex.practicum.client.HubRouterClient;
+import ru.yandex.practicum.kafka.telemetry.event.*;
 import ru.yandex.practicum.model.Condition;
 import ru.yandex.practicum.model.Scenario;
-import ru.yandex.practicum.model.ScenarioCondition;
-import ru.yandex.practicum.repository.ScenarioActionRepository;
-import ru.yandex.practicum.repository.ScenarioConditionRepository;
+import ru.yandex.practicum.repository.ActionRepository;
+import ru.yandex.practicum.repository.ConditionRepository;
 import ru.yandex.practicum.repository.ScenarioRepository;
 
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SnapshotHandler {
 
+    private final ConditionRepository conditionRepository;
     private final ScenarioRepository scenarioRepository;
-    private final ScenarioConditionRepository scenarioConditionRepository;
-    private final ScenarioActionRepository scenarioActionRepository;
-    private final HubRouterClient routerClient;
+    private final ActionRepository actionRepository;
+    private final HubRouterClient hubRouterClient;
 
-    @Transactional(readOnly = true)
-    public void handle(SensorsSnapshotAvro sensorsSnapshotAvro) {
-        Map<String, SensorStateAvro> sensorStateMap = sensorsSnapshotAvro.getSensorsState();
-        List<Scenario> scenariosList = scenarioRepository.findByHubId(sensorsSnapshotAvro.getHubId());
-
-        scenariosList.stream()
+    public void buildSnapshot(SensorsSnapshotAvro sensorsSnapshot) {
+        Map<String, SensorStateAvro> sensorStateMap = sensorsSnapshot.getSensorsState();
+        List<Scenario> scenarios = scenarioRepository.findByHubId(sensorsSnapshot.getHubId())
+                .stream()
                 .filter(scenario -> handleScenario(scenario, sensorStateMap))
-                .forEach(scenario -> {
-                    log.info("Отправка ДЕЙСТВИЯ для сценария {}", scenario.getName());
-                    sendScenarioAction(scenario);
-                });
-    }
+                .toList();
 
-    private void sendScenarioAction(Scenario scenario) {
-        scenarioActionRepository.findByScenario(scenario)
-                .forEach(routerClient::sendAction);
+        sendScenarioActions(scenarios);
     }
 
     private boolean handleScenario(Scenario scenario, Map<String, SensorStateAvro> sensorStateMap) {
-        List<ScenarioCondition> scenarioConditions =
-                scenarioConditionRepository.findByScenario(scenario);
-        log.info("Получили СПИСОК условий {} у сценария name = {}",
-                scenarioConditions.size(), scenario.getName());
-
-        return scenarioConditions.stream()
-                .noneMatch(sc -> !checkCondition(sc.getCondition(),
-                        sc.getSensor().getId(),
-                        sensorStateMap));
+        List<Condition> conditions = conditionRepository.findAllByScenario(scenario);
+        return conditions.stream().noneMatch(condition -> !checkCondition(condition, sensorStateMap));
     }
 
-    private boolean handleOperation(Condition condition, Integer currentValue) {
-        Integer targetValue = condition.getValue();
-        return switch (condition.getOperation()) {
-            case EQUALS -> targetValue.equals(currentValue);
-            case GREATER_THAN -> currentValue > targetValue;
-            case LOWER_THAN -> currentValue < targetValue;
-        };
-    }
-
-    private boolean checkCondition(Condition condition, String sensorId,
-                                   Map<String, SensorStateAvro> sensorStateMap) {
-
+    private boolean checkCondition(Condition condition, Map<String, SensorStateAvro> sensorStateMap) {
+        String sensorId = condition.getSensor().getId();
         SensorStateAvro sensorState = sensorStateMap.get(sensorId);
         if (sensorState == null) {
             return false;
         }
-        return switch (condition.getType()) {
-            case MOTION -> {
-                MotionSensorAvro motion = (MotionSensorAvro) sensorState.getData();
-                yield handleOperation(condition, motion.getMotion() ? 1 : 0);
-            }
+
+        switch (condition.getType()) {
             case LUMINOSITY -> {
-                LightSensorAvro light = (LightSensorAvro) sensorState.getData();
-                yield handleOperation(condition, light.getLuminosity());
-            }
-            case SWITCH -> {
-                SwitchSensorAvro sw = (SwitchSensorAvro) sensorState.getData();
-                yield handleOperation(condition, sw.getState() ? 1 : 0);
+                LightSensorAvro lightSensor = (LightSensorAvro) sensorState.getData();
+                return handleOperation(condition, lightSensor.getLuminosity());
             }
             case TEMPERATURE -> {
-                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
-                yield handleOperation(condition, climate.getTemperatureC());
+                ClimateSensorAvro temperatureSensor = (ClimateSensorAvro) sensorState.getData();
+                return handleOperation(condition, temperatureSensor.getTemperatureC());
+            }
+            case MOTION -> {
+                MotionSensorAvro motionSensor = (MotionSensorAvro) sensorState.getData();
+                return handleOperation(condition, motionSensor.getMotion() ? 1 : 0);
+            }
+            case SWITCH -> {
+                SwitchSensorAvro switchSensor = (SwitchSensorAvro) sensorState.getData();
+                return handleOperation(condition, switchSensor.getState() ? 1 : 0);
             }
             case CO2LEVEL -> {
-                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
-                yield handleOperation(condition, climate.getCo2Level());
+                ClimateSensorAvro climateSensor = (ClimateSensorAvro) sensorState.getData();
+                return handleOperation(condition, climateSensor.getCo2Level());
             }
             case HUMIDITY -> {
-                ClimateSensorAvro climate = (ClimateSensorAvro) sensorState.getData();
-                yield handleOperation(condition, climate.getHumidity());
+                ClimateSensorAvro climateSensor = (ClimateSensorAvro) sensorState.getData();
+                return handleOperation(condition, climateSensor.getHumidity());
             }
-        };
+            case null -> {
+                return false;
+            }
+        }
+    }
+
+    private Boolean handleOperation(Condition condition, Integer currentValue) {
+        ConditionOperationAvro conditionOperation = condition.getOperation();
+        Integer targetValue = condition.getValue();
+
+        switch (conditionOperation) {
+            case EQUALS -> {
+                return targetValue == currentValue;
+            }
+            case LOWER_THAN -> {
+                return currentValue < targetValue;
+            }
+            case GREATER_THAN -> {
+                return currentValue > targetValue;
+            }
+            case null -> {
+                return null;
+            }
+        }
+    }
+
+    private void sendScenarioActions(List<Scenario> scenarios) {
+        actionRepository.findAllByScenarioIn(scenarios)
+                .forEach(hubRouterClient::sendAction);
     }
 }
