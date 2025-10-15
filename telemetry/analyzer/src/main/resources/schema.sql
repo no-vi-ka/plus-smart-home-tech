@@ -1,4 +1,13 @@
--- создаём таблицу scenarios
+DROP TRIGGER IF EXISTS tr_bi_scenario_actions_hub_id_check ON scenario_actions;
+DROP TRIGGER IF EXISTS tr_bi_scenario_conditions_hub_id_check ON scenario_conditions;
+DROP FUNCTION IF EXISTS check_hub_id;
+DROP TABLE IF EXISTS scenario_actions;
+DROP TABLE IF EXISTS scenario_conditions;
+DROP TABLE IF EXISTS actions;
+DROP TABLE IF EXISTS conditions;
+DROP TABLE IF EXISTS sensors;
+DROP TABLE IF EXISTS scenarios;
+
 CREATE TABLE IF NOT EXISTS scenarios (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     hub_id VARCHAR,
@@ -6,13 +15,11 @@ CREATE TABLE IF NOT EXISTS scenarios (
     UNIQUE(hub_id, name)
 );
 
--- создаём таблицу sensors
 CREATE TABLE IF NOT EXISTS sensors (
     id VARCHAR PRIMARY KEY,
     hub_id VARCHAR
 );
 
--- создаём таблицу conditions
 CREATE TABLE IF NOT EXISTS conditions (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     type VARCHAR,
@@ -20,7 +27,6 @@ CREATE TABLE IF NOT EXISTS conditions (
     value INTEGER
 );
 
--- создаём таблицу actions
 CREATE TABLE IF NOT EXISTS actions (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     type VARCHAR,

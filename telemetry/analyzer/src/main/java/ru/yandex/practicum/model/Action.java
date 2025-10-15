@@ -1,34 +1,36 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceActionTypeAvro;
 
 @Entity
 @Table(name = "actions")
 @Getter
+@Setter
+@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@SecondaryTable(name = "scenario_actions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "action_id"))
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Action {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
-
     @Enumerated(EnumType.STRING)
-    ActionTypeAvro type;
-
+    DeviceActionTypeAvro type;
     Integer value;
-
-    @ManyToOne
-    @JoinColumn(name = "scenario_id", table = "scenario_actions")
-    Scenario scenario;
-
-    @ManyToOne
-    @JoinColumn(name = "sensor_id", table = "scenario_actions")
-    Sensor sensor;
 }

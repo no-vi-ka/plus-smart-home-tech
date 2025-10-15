@@ -1,7 +1,19 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.enums.ProductCategory;
 import ru.yandex.practicum.enums.ProductState;
@@ -11,38 +23,32 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "products")
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
-@Builder
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "product_id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
     UUID productId;
-
-    @Column(name = "product_name", nullable = false)
+    @Column(name = "product_name")
     String productName;
-
-    @Column(name = "description", nullable = false)
+    @Column(name = "description")
     String description;
-
     @Column(name = "image_src")
     String imageSrc;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "quantity_state")
-    @Enumerated(EnumType.STRING)
     QuantityState quantityState;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_state")
-    @Enumerated(EnumType.STRING)
     ProductState productState;
-
-    @Column(name = "product_category")
     @Enumerated(EnumType.STRING)
+    @Column(name = "product_category")
     ProductCategory productCategory;
-
-    @Column(name = "price", nullable = false)
+    @Column(name = "price")
     Float price;
 }

@@ -4,98 +4,109 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.exception.*;
-import ru.yandex.practicum.feign.ShoppingStoreClient;
+import ru.yandex.practicum.dto.AddProductToWarehouseRequestDto;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.NewProductInWarehouseRequestDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.exception.NoSpecifiedProductInWarehouseException;
+import ru.yandex.practicum.exception.ProductInShoppingCartLowQuantityInWarehouse;
+import ru.yandex.practicum.exception.SpecifiedProductAlreadyInWarehouseException;
 import ru.yandex.practicum.mapper.WarehouseMapper;
-import ru.yandex.practicum.model.Address;
-import ru.yandex.practicum.model.Warehouse;
+import ru.yandex.practicum.model.WarehouseProduct;
 import ru.yandex.practicum.repository.WarehouseRepository;
-import ru.yandex.practicum.request.AddProductToWarehouseRequest;
-import ru.yandex.practicum.request.NewProductInWarehouseRequest;
 
-import java.util.Map;
+import java.security.SecureRandom;
+import java.util.Random;
 import java.util.UUID;
 
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class WarehouseServiceImpl implements WarehouseService {
-
     private final WarehouseRepository warehouseRepository;
-    private final ShoppingStoreClient shoppingStoreClient;
+    private final WarehouseMapper warehouseMapper;
+
+    private static final String[] ADDRESSES =
+            new String[]{"ADDRESS_1", "ADDRESS_2"};
+
+    private static final String CURRENT_ADDRESS =
+            ADDRESSES[Random.from(new SecureRandom()).nextInt(0, 1)];
 
     @Override
-    public void addProduct(NewProductInWarehouseRequest requestDto) {
-        UUID productId = requestDto.getProductId();
-
-        if (warehouseRepository.existsById(productId)) {
-            throw new SpecifiedProductAlreadyInWarehouseException(
-                    String.format("Товар с ID = %s уже заведен на склад", productId));
-        }
-
-        Warehouse product = WarehouseMapper.mapFromRequest(requestDto);
-        product.setQuantity(0);
-        warehouseRepository.save(product);
+    public void createProduct(NewProductInWarehouseRequestDto requestDto) {
+        warehouseRepository.findById(requestDto.getProductId()).ifPresent(warehouse -> {
+            throw new SpecifiedProductAlreadyInWarehouseException("The product already is in warehouse");
+        });
+        WarehouseProduct warehouseProduct = warehouseMapper.toWarehouseProduct(requestDto);
+        warehouseRepository.save(warehouseProduct);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public BookedProductsDto checkProductQuantity(ShoppingCartDto cartDto) {
-        double totalWeight = 0.0;
-        double totalVolume = 0.0;
-        boolean hasFragile = false;
-
-        for (Map.Entry<UUID, Integer> entry : cartDto.getProducts().entrySet()) {
-            UUID productId = entry.getKey();
-            long requestedQty = entry.getValue();
-
-            Warehouse product = warehouseRepository.findById(productId).orElseThrow(
-                    () -> new NotFoundException(String.format("Продукт id = %s не найден на складе", productId))
-            );
-
-            if (product.getQuantity() < requestedQty) {
-                throw new ProductInShoppingCartLowQuantityInWarehouseException(
-                        String.format("На складе недостаточно товара id = %s", productId));
+    public BookedProductsDto checkQuantity(ShoppingCartDto shoppingCartDto) {
+        BookedProductsDto BookedProductsDto = new BookedProductsDto();
+        for (UUID productId : shoppingCartDto.getProducts().keySet()) {
+            WarehouseProduct product = warehouseRepository.findByProductId(productId)
+                    .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("The product is not found in " +
+                            "warehouse by productId =" + productId));
+            long requestedQuantity = shoppingCartDto.getProducts().get(productId);
+            long productQuantity = 0;
+            if (product.getQuantity() != null) {
+                productQuantity = product.getQuantity();
             }
 
-            totalWeight += product.getWeight() * requestedQty;
-            totalVolume += product.getDimensionDto().getWidth() *
-                    product.getDimensionDto().getHeight() *
-                    product.getDimensionDto().getDepth() * requestedQty;
+            if (productQuantity < requestedQuantity) {
+                throw new ProductInShoppingCartLowQuantityInWarehouse("The product is not enough (" + productQuantity
+                        + ") in warehouse for requested (" + requestedQuantity + ")");
+            }
 
-            if (product.getFragile()) hasFragile = true;
+            double deliveryVolume = 0.0;
+            if (BookedProductsDto.getDeliveryVolume() != null) {
+                deliveryVolume = BookedProductsDto.getDeliveryVolume();
+            }
+            BookedProductsDto.setDeliveryVolume(
+                    deliveryVolume + product.getDimension().getHeight()
+                            * product.getDimension().getDepth()
+                            * product.getDimension().getWidth()
+            );
+
+            double deliveryWeight = 0.0;
+            if (BookedProductsDto.getDeliveryWeight() != null) {
+                deliveryWeight = BookedProductsDto.getDeliveryWeight();
+            }
+            BookedProductsDto.setDeliveryWeight(deliveryWeight + product.getWeight());
+            if (product.getFragile()) {
+                BookedProductsDto.setFragile(true);
+            }
+            log.info("Successful checked productId = {}", productId);
         }
+        log.info("All products have been checked");
 
-        return BookedProductsDto.builder()
-                .deliveryWeight(totalWeight)
-                .deliveryVolume(totalVolume)
-                .fragile(hasFragile)
-                .build();
+        return BookedProductsDto;
+    }
+
+    @Override
+    public void addProductToWarehouse(AddProductToWarehouseRequestDto requestDto) {
+        WarehouseProduct product = warehouseRepository.findByProductId(requestDto.getProductId())
+                .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("The product is not found in " +
+                        "warehouse by productId =" + requestDto.getProductId()));
+
+        long quantity = 0;
+        if (product.getQuantity() != null) {
+            quantity = product.getQuantity();
+        }
+        product.setQuantity(quantity + requestDto.getQuantity());
     }
 
     @Override
     public AddressDto getAddress() {
-        String address = Address.CURRENT_ADDRESS;
         return AddressDto.builder()
-                .country(address)
-                .city(address)
-                .street(address)
-                .house(address)
-                .flat(address)
+                .country("country")
+                .city("city")
+                .street("street")
+                .house("house")
+                .flat("flat")
                 .build();
-    }
-
-    @Override
-    public void updateProductQuantity(AddProductToWarehouseRequest requestDto) {
-        UUID productId = requestDto.getProductId();
-        Warehouse product = warehouseRepository.findById(productId).orElseThrow(
-                () -> new NotFoundException(String.format("Продукт id = %s не найден на складе", productId))
-        );
-        product.setQuantity(product.getQuantity() + requestDto.getQuantity());
-        warehouseRepository.save(product);
     }
 }

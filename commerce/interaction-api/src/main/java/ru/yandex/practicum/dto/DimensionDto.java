@@ -1,20 +1,23 @@
 package ru.yandex.practicum.dto;
 
-import jakarta.validation.constraints.Positive;
-import lombok.*;
+import jakarta.validation.constraints.Min;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DimensionDto {
-    @Positive
+    @Min(1)
     Double width;
-    @Positive
+    @Min(1)
     Double height;
-    @Positive
+    @Min(1)
     Double depth;
 }

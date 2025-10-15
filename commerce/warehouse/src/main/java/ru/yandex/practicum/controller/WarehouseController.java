@@ -2,42 +2,54 @@ package ru.yandex.practicum.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.contract.WarehouseContract;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.dto.AddProductToWarehouseRequestDto;
 import ru.yandex.practicum.dto.AddressDto;
 import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.NewProductInWarehouseRequestDto;
 import ru.yandex.practicum.dto.ShoppingCartDto;
-import ru.yandex.practicum.request.AddProductToWarehouseRequest;
-import ru.yandex.practicum.request.NewProductInWarehouseRequest;
 import ru.yandex.practicum.service.WarehouseService;
 
 @RestController
 @RequestMapping("/api/v1/warehouse")
+@Slf4j
 @RequiredArgsConstructor
-public class WarehouseController implements WarehouseContract {
+public class WarehouseController {
     private final WarehouseService warehouseService;
 
-    @Override
     @PutMapping
-    public void addProduct(@RequestBody @Valid NewProductInWarehouseRequest newProductInWarehouseRequestDto) {
-        warehouseService.addProduct(newProductInWarehouseRequestDto);
+    public void createProduct(@RequestBody @Valid NewProductInWarehouseRequestDto requestDto) {
+        log.info("==> Create product requestDto = {}", requestDto);
+        warehouseService.createProduct(requestDto);
     }
 
-    @Override
     @PostMapping("/check")
-    public BookedProductsDto checkProductQuantity(@RequestBody @Valid ShoppingCartDto shoppingCartDto) {
-        return warehouseService.checkProductQuantity(shoppingCartDto);
+    public BookedProductsDto checkQuantity(@RequestBody @Valid ShoppingCartDto cart) {
+        log.info("==> Check product quantity in shopping card = {}", cart);
+        BookedProductsDto result = warehouseService.checkQuantity(cart);
+        log.info("<== Result of check = {}", result);
+
+        return result;
     }
 
-    @Override
     @PostMapping("/add")
-    public void updateProductQuantity(@RequestBody @Valid AddProductToWarehouseRequest addProductToWarehouseRequestDto) {
-        warehouseService.updateProductQuantity(addProductToWarehouseRequestDto);
+    public void addProductToWarehouse(@RequestBody @Valid AddProductToWarehouseRequestDto requestDto) {
+        log.info("==> Add product to warehouse, requestDto = {}", requestDto);
+        warehouseService.addProductToWarehouse(requestDto);
     }
 
-    @Override
     @GetMapping("/address")
     public AddressDto getAddress() {
-        return warehouseService.getAddress();
+        log.info("==> Get address");
+        AddressDto result = warehouseService.getAddress();
+        log.info("<== Got address result = {}", result);
+
+        return result;
     }
 }
