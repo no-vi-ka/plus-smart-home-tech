@@ -5,3 +5,7 @@ topic:
 
 kafka:
   bootstrap-servers: localhost:9092
+
+grpc:
+  server:
+    port: 59091
