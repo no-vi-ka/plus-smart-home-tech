@@ -1,57 +1,76 @@
-analyzer:
-  kafka:
-    config:
-      bootstrap-servers: "localhost:9092"
-
-      hub-consumer:
-        group-id: "hub-analyzer-group"
-        client-id: "hub-consumer-1"
-        key-deserializer: "org.apache.kafka.common.serialization.StringDeserializer"
-        value-deserializer: "ru.practicum.avro.HubEventDeserializer"
-        attempt-timeout: 1000
-
-      snapshot-consumer:
-        group-id: "snapshot-analyzer-group"
-        client-id: "snapshot-consumer-1"
-        key-deserializer: "org.apache.kafka.common.serialization.StringDeserializer"
-        value-deserializer: "ru.practicum.avro.SensorSnapshotDeserializer"
-        attempt-timeout: 1000
-
-      hub-events-topic: "telemetry.hubs.v1"
-      sensor-snapshots-topic: "telemetry.snapshots.v1"
+server:
+  port: 8081
 
 spring:
+  sql:
+    init:
+      mode: always
+
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: none
     properties:
       hibernate:
+        jdbc:
+          time_zone: UTC
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  sql:
-    init:
-      mode: always
-  output:
-    ansi:
-      enabled: ALWAYS
+    show_sql: true
+
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/analyzer
     username: analyzer
     password: analyzer
+    driver-class-name: org.postgresql.Driver
 
 logging:
   level:
-    "org.springframework.orm.jpa": INFO
-    "org.springframework.transaction": INFO
-    "org.springframework.transaction.interceptor": TRACE
-    "org.springframework.orm.jpa.JpaTransactionManager": DEBUG
-    "org.hibernate.SQL": DEBUG
-    "org.hibernate.orm.jdbc.bind": trace
+    org:
+      springframework:
+        orm.jpa: INFO
+        transaction: INFO
+        transaction.interceptor: TRACE
+        orm.jpa.JpaTransactionManager: DEBUG
+    hibernate:
+      SQL: DEBUG
 
 grpc:
-  client.hub-router:
-    address: "static://localhost:59090"
-    enableKeepAlive: true
-    keepAliveWithoutCalls: true
-    negotiationType: "plaintext"
+  client:
+    hub-router:
+      address: 'static://localhost:59090'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+
+analyzer:
+  kafka:
+    hub-consumer:
+      properties:
+        "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
+        "value.deserializer": ru.yandex.practicum.kafka.serializer.HubEventDeserializer
+        "group.id": "analyzer.hub.group.id"
+        "client.id": "analyzer-hub"
+        "bootstrap.servers": localhost:9092
+        "max.poll.records": 100
+        "fetch.max.bytes": 3072000
+        "max.partition.fetch.bytes": 3072000
+        "enable.auto.commit": true
+        "auto.offset.reset": "latest"
+
+    snapshot-consumer:
+      properties:
+        "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
+        "value.deserializer": ru.yandex.practicum.kafka.serializer.SensorsSnapshotDeserializer
+        "group.id": "analyzer.snapshot.group.id"
+        "client.id": "analyzer-snapshot"
+        "bootstrap.servers": localhost:9092
+        "max.poll.records": 100
+        "fetch.max.bytes": 3072000
+        "max.partition.fetch.bytes": 3072000
+        "enable.auto.commit": false
+        "auto.offset.reset": "earliest"
+
+
+    topics:
+      HUB_EVENTS: telemetry.hubs.v1
+      SNAPSHOT_EVENTS: telemetry.snapshots.v1

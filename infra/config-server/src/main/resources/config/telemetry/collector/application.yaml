@@ -1,13 +1,24 @@
+logging:
+  level:
+    ru.yandex.practicum.telemetry: TRACE
+    org:
+      springframework: ERROR
+      apache.kafka: WARN
+
 grpc:
   server:
-    port: 8080
+    port: 59091
+    reflection-service-enabled: true
 
 collector:
   kafka:
-    config:
-      bootstrap-servers: "localhost:9092"
-      client-id-config: "producer-1"
-      producer-key-serializer: "org.apache.kafka.common.serialization.StringSerializer"
-      producer-value-serializer: "ru.practicum.avro.AvroSerializer"
-      sensor-events-topic: "telemetry.sensors.v1"
-      hub-events-topic: "telemetry.hubs.v1"
+    producer:
+      properties:
+        bootstrap.servers: localhost:9092
+        client.id: "telemetry.collector"
+        key.serializer: org.apache.kafka.common.serialization.StringSerializer
+        value.serializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
+        linger.ms: 0
+    topics:
+      SENSOR_EVENTS: telemetry.sensors.v1
+      HUB_EVENTS: telemetry.hubs.v1

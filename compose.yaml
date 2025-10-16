@@ -1,6 +1,6 @@
 services:
   kafka:
-    image: confluentinc/confluent-local
+    image: confluentinc/confluent-local:7.4.3
     hostname: kafka
     container_name: kafka
     ports:
@@ -18,7 +18,7 @@ services:
       CLUSTER_ID: 'K0EA9p0yEe6MkAAAAkKsEg'
 
   kafka-init-topics:
-    image: confluentinc/confluent-local
+    image: confluentinc/confluent-local:7.4.3
     container_name: kafka-init-topics
     depends_on:
       - kafka
@@ -34,47 +34,38 @@ services:
                              --bootstrap-server kafka:29092'"
     init: true
 
-  kafka-ui:
-    container_name: kafka-ui
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - 8082:8080
-    environment:
-      DYNAMIC_CONFIG_ENABLED: true
-
-  db:
+  analyzer-db:
     image: postgres:16.1
-    container_name: postgres-analyzer
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
+    environment:
+      POSTGRES_DB: analyzer
+      POSTGRES_USER: analyzer
+      POSTGRES_PASSWORD: analyzer
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_PASSWORD=analyzer
-      - POSTGRES_USER=analyzer
-      - POSTGRES_DB=analyzer
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
 
-  store-db:
+  shopping-store-db:
     image: postgres:16.1
-    container_name: postgres-commerce
-    volumes:
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "6432:5432"
     environment:
-      - POSTGRES_PASSWORD=commerce
-      - POSTGRES_USER=commerce
- #     - POSTGRES_DB=store
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
+      POSTGRES_DB: shopping-store
+      POSTGRES_USER: shopping-store
+      POSTGRES_PASSWORD: shopping-store
+    ports:
+      - "5433:5432"
+
+  shopping-cart-db:
+    image: postgres:16.1
+    environment:
+      POSTGRES_DB: shopping-cart
+      POSTGRES_USER: shopping-cart
+      POSTGRES_PASSWORD: shopping-cart
+    ports:
+      - "5434:5432"
+
+  warehouse-db:
+    image: postgres:16.1
+    environment:
+      POSTGRES_DB: warehouse
+      POSTGRES_USER: warehouse
+      POSTGRES_PASSWORD: warehouse
+    ports:
+      - "5435:5432"

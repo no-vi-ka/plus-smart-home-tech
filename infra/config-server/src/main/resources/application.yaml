@@ -7,11 +7,16 @@ spring:
     config:
       server:
         native:
-          searchLocations:
-            - classpath:config/telemetry/{application}
-            - classpath:config/commerce/{application}
+          search-locations:
+            - classpath:/config/telemetry/{application}
+            - classpath:/config/commerce/{application}
+      fail-fast: true
+      retry:
+        useRandomPolicy: true
+        maxInterval: 6000
+
 server:
-  port: 0
+  port: 8888
 
 eureka:
   client:

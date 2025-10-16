@@ -1,11 +1,21 @@
-CREATE TABLE IF NOT EXISTS products (
-    product_id       UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    name             varchar(200) NOT NULL,
-    description      varchar(2000) NOT NULL,
-    image_src        varchar(1000),
-    quantity_state   varchar(20) NOT NULL,
-    product_state    varchar(20) NOT NULL,
-    rating           DOUBLE PRECISION,
-    category         varchar(20),
-    price            DOUBLE PRECISION
+CREATE TABLE IF NOT EXISTS products
+(
+    product_id     uuid DEFAULT gen_random_uuid() NOT NULL,
+    product_name   VARCHAR(255) NOT NULL,
+    description    VARCHAR(500) NOT NULL,
+    image_src      VARCHAR(255),
+    quantity_state VARCHAR(10) NOT NULL,
+    product_state  VARCHAR(10) NOT NULL,
+    product_category VARCHAR(10) NOT NULL,
+    price NUMERIC(19,2) NOT NULL,
+
+    CONSTRAINT products_pk PRIMARY KEY (product_id),
+
+    CONSTRAINT check_quantity_state
+        CHECK (quantity_state IN ('ENDED', 'FEW', 'ENOUGH', 'MANY')),
+    CONSTRAINT check_product_state
+        CHECK (product_state IN ('ACTIVE', 'DEACTIVATE')),
+    CONSTRAINT check_product_category
+        CHECK (product_category IN ('LIGHTING', 'CONTROL', 'SENSORS'))
+
 );
