@@ -1,17 +1,17 @@
 package ru.yandex.practicum.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.model.Scenario;
+import org.springframework.data.jpa.repository.Query;
 import ru.yandex.practicum.model.ScenarioAction;
 import ru.yandex.practicum.model.ScenarioActionId;
 
 import java.util.List;
+import java.util.Set;
 
-@Repository
 public interface ScenarioActionRepository extends JpaRepository<ScenarioAction, ScenarioActionId> {
-
-    void deleteByScenario(Scenario scenario);
-
-    List<ScenarioAction> findByScenario(Scenario scenario);
+    List<ScenarioAction> findByScenarioId(Long scenarioId);
+    List<ScenarioAction> findBySensorId(String sensorId);
+    @Query("SELECT sc.id.scenarioId FROM ScenarioCondition sc " +
+            "WHERE sc.id.scenarioId IN :scenarioIds")
+    Set<Long> findExistingScenarioIds(List<Long> scenarioIds);
 }
