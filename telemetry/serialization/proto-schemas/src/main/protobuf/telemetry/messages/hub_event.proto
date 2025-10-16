@@ -2,95 +2,105 @@ syntax = "proto3";
 
 package telemetry.message.event;
 
-
-import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
 
+
+// Основное сообщение, содержит событие хаба.
 message HubEventProto {
-    string hub_id = 1; // идентификатор хаба
-    google.protobuf.Timestamp timestamp = 2; // таймстемп события
-    oneof payload {// содержимое конкретного события
-        DeviceAddedEventProto device_added = 3;      // данные события добавления устройства
-        DeviceRemovedEventProto device_removed = 4;  // данные события удаления устройства
-        ScenarioAddedEventProto scenario_added = 5;      // данные события добавления нового сценария
-        ScenarioRemovedEventProto scenario_removed = 6;  // данные события удаления сценария
-    }
+  string hub_id = 1;                       // Уникальный идентификатор хаба, который отправил событие.
+  google.protobuf.Timestamp timestamp = 2; // Временная метка события.
+  // Одно из событий:
+  oneof payload {
+    DeviceAddedEventProto device_added = 3;         // Данные о событии добавления нового устройства.
+    DeviceRemovedEventProto device_removed = 4;     // Данные о событии удаления устройства.
+    ScenarioAddedEventProto scenario_added = 5;     // Данные о событии добавления нового сценария.
+    ScenarioRemovedEventProto scenario_removed = 6; // Данные о событии удаления сценария.
+  }
 }
 
-// события (де)регистрации устройств
+// Перечисление типов устройств, поддерживаемых системой.
 enum DeviceTypeProto {
-    MOTION_SENSOR = 0;      // датчик движения
-    TEMPERATURE_SENSOR = 1; // датчик температуры
-    LIGHT_SENSOR = 2;       // датчик освещённости
-    CLIMATE_SENSOR = 3;     // датчик контроля климата
-    SWITCH_SENSOR = 4;      // переключатель
+  MOTION_SENSOR = 0;      // Датчик движения.
+  TEMPERATURE_SENSOR = 1; // Датчик температуры.
+  LIGHT_SENSOR = 2;       // Датчик освещённости.
+  CLIMATE_SENSOR = 3;     // Датчик климата.
+  SWITCH_SENSOR = 4;      // Датчик переключатель.
 }
 
-message DeviceAddedEventProto {
-    string id = 1;        // идентификатор устройства
-    DeviceTypeProto type = 2; // тип устройства
-}
-
-message DeviceRemovedEventProto {
-    string id = 1;        // идентификатор устройства
-}
-
-// события создания/удаления сценариев
+// Перечисление типов условий, используемых в сценариях.
 enum ConditionTypeProto {
-    MOTION = 0;
-    LUMINOSITY = 1;
-    SWITCH = 2;
-    TEMPERATURE = 3;
-    CO2LEVEL = 4;
-    HUMIDITY = 5;
+  MOTION = 0;      // Условие, связанное с движением.
+  LUMINOSITY = 1;  // Условие, связанное с уровнем освещенности.
+  SWITCH = 2;      // Условие, связанное с состоянием переключателя.
+  TEMPERATURE = 3; // Условие, связанное с температурой.
+  CO2LEVEL = 4;    // Условие, связанное с уровнем CO2.
+  HUMIDITY = 5;    // Условие, связанное с уровнем влажности.
 }
 
-enum ConditionOperationProto {
-    EQUALS = 0;
-    GREATER_THAN = 1;
-    LOWER_THAN = 2;
-}
-
-message ScenarioConditionProto {
-    string sensor_id = 1;
-    ConditionTypeProto type = 2;
-    ConditionOperationProto operation = 3;
-    oneof value {
-        bool bool_value = 4;
-        int32 int_value = 5;
-    }
-}
-
+// Перечисление типов действий с устройством.
 enum ActionTypeProto {
-    ACTIVATE = 0;
-    DEACTIVATE = 1;
-    INVERSE = 2;
-    SET_VALUE = 3;
+  ACTIVATE = 0;   // Активировать устройство.
+  DEACTIVATE = 1; // Деактивировать устройство.
+  INVERSE = 2;    // Изменить текущее состояние на противоположное.
+  SET_VALUE = 3;  // Установить значение (например, яркость света).
 }
 
-message DeviceActionProto {
-    string sensor_id = 1; // идентификатор устройства
-    ActionTypeProto type = 2;
-    optional int32 value = 3;
+// Перечисление типов операций сравнения для условий сценариев.
+enum ConditionOperationProto {
+  EQUALS = 0;       // Равно.
+  GREATER_THAN = 1; // Больше чем.
+  LOWER_THAN = 2;   // Меньше чем.
 }
 
-message ScenarioAddedEventProto {
-    string name = 1; // название сценария, уникальное в рамках хаба
-    repeated ScenarioConditionProto condition = 2; // набор условий активации сценария
-    repeated DeviceActionProto action = 3; // набор действий при активации сценария
+// Сообщение о событии добавления нового устройства.
+message DeviceAddedEventProto {
+  string id = 1;            // Уникальный идентификатор добавленного устройства.
+  DeviceTypeProto type = 2; // Тип добавленного устройства.
 }
 
+// Сообщение о событии удаления устройства.
+message DeviceRemovedEventProto {
+  string id = 1;            // Уникальный идентификатор удаленного устройства.
+}
+
+// Сообщение о событии удаления сценария.
 message ScenarioRemovedEventProto {
-    string name = 1; // название сценария, уникальное в рамках хаба
+  string name = 1; // Имя удаляемого сценария в рамках хаба.
 }
 
+// Условие для активации сценария.
+message ScenarioConditionProto {
+  string sensor_id = 1;                  // Идентификатор сенсора, к которому применяется условие.
+  ConditionTypeProto type = 2;           // Тип условия (например, движение, температура).
+  ConditionOperationProto operation = 3; // Тип операции сравнения (равно, больше, меньше).
+  // Значение, с которым сравнивается показание сенсора.
+  oneof value {
+    bool bool_value = 4; // Булево значение для условий типа SWITCH или MOTION.
+    int32 int_value = 5; // Целочисленное значение для числовых условий (температура, CO2).
+  }
+}
 
+// Действие, которое должно быть выполнено при активации сценария.
+message DeviceActionProto {
+  string sensor_id = 1;     // Идентификатор устройства, на которое направлено действие.
+  ActionTypeProto type = 2; // Тип действия (активировать, деактивировать, установить значение).
+  optional int32 value = 3; // Опциональное целочисленное значение, используется для ActionTypeProto.SET_VALUE.
+}
+
+// Сообщение о событии добавления нового сценария.
+message ScenarioAddedEventProto {
+  string name = 1;                                // Название сценария в рамках хаба.
+  repeated ScenarioConditionProto conditions = 2; // Список условий, при выполнении которых активируется сценарий.
+  repeated DeviceActionProto actions = 3;         // Список действий, выполняемых при активации сценария.
+}
+
+// Сообщение о действии над устройством
 message DeviceActionRequest {
-    string hub_id = 1;
-    string scenario_name = 2;
-    DeviceActionProto action = 3;
-    google.protobuf.Timestamp timestamp = 4;
+  string hub_id = 1;                          // Уникальный идентификатор хаба, который получит действие.
+  string scenario_name = 2;                   // Имя сценария в рамках которого выполняется действие
+  DeviceActionProto action = 3;               // Действие
+  google.protobuf.Timestamp timestamp = 4;    // Временная метка действия.
 }

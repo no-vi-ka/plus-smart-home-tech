@@ -1,7 +1,0 @@
-grpc:
-  server:
-    port: 59091
-
-kafka:
-  bootstrap-servers: localhost:9092
-  value-serializer: ru.practicum.event_serializer.AvroSerializer
