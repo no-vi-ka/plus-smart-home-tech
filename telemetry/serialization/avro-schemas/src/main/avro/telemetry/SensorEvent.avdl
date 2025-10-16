@@ -23,9 +23,6 @@ protocol SensorEventProtocol {
     }
 
     record TemperatureSensorAvro {
-        string id;
-        string hubId;
-        timestamp_ms timestamp;
         int temperature_c;
         int temperature_f;
     }
@@ -35,11 +32,11 @@ protocol SensorEventProtocol {
         string hubId;
         timestamp_ms timestamp;
         union {
-            ClimateSensorAvro,
-            LightSensorAvro,
-            MotionSensorAvro,
-            SwitchSensorAvro,
-            TemperatureSensorAvro
+                ClimateSensorAvro,
+                LightSensorAvro,
+                MotionSensorAvro,
+                SwitchSensorAvro,
+                TemperatureSensorAvro
         } payload;
     }
 }
