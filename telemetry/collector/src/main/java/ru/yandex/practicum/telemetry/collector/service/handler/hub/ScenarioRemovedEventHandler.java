@@ -8,20 +8,22 @@ import ru.yandex.practicum.telemetry.collector.service.KafkaEventProducer;
 
 @Component
 public class ScenarioRemovedEventHandler extends BaseHubEventHandler<ScenarioRemovedEventAvro> {
+
     public ScenarioRemovedEventHandler(KafkaEventProducer producer) {
         super(producer);
     }
 
     @Override
-    public HubEventProto.PayloadCase getType() {
+    public HubEventProto.PayloadCase getMessageType() {
         return HubEventProto.PayloadCase.SCENARIO_REMOVED;
     }
 
     @Override
-    public ScenarioRemovedEventAvro mapToAvro(HubEventProto eventProto) {
-        ScenarioRemovedEventProto payload = eventProto.getScenarioRemoved();
+    protected ScenarioRemovedEventAvro mapToAvro(HubEventProto event) {
+        ScenarioRemovedEventProto _event = event.getScenarioRemoved();
+
         return ScenarioRemovedEventAvro.newBuilder()
-                .setName(payload.getName())
+                .setName(_event.getName())
                 .build();
     }
 }

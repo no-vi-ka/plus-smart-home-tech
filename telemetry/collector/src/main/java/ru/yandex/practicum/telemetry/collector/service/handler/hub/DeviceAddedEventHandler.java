@@ -9,23 +9,25 @@ import ru.yandex.practicum.telemetry.collector.service.KafkaEventProducer;
 
 @Component
 public class DeviceAddedEventHandler extends BaseHubEventHandler<DeviceAddedEventAvro> {
+
     public DeviceAddedEventHandler(KafkaEventProducer producer) {
         super(producer);
     }
 
     @Override
-    public HubEventProto.PayloadCase getType() {
+    public HubEventProto.PayloadCase getMessageType() {
         return HubEventProto.PayloadCase.DEVICE_ADDED;
     }
 
     @Override
-    public DeviceAddedEventAvro mapToAvro(HubEventProto eventProto) {
-        DeviceAddedEventProto payload = eventProto.getDeviceAdded();
+    protected DeviceAddedEventAvro mapToAvro(HubEventProto event) {
+        DeviceAddedEventProto _event = event.getDeviceAdded();
+
+        DeviceTypeAvro avroDeviceType = DeviceTypeAvro.valueOf(_event.getType().name());
+
         return DeviceAddedEventAvro.newBuilder()
-                .setId(payload.getId())
-                .setType(DeviceTypeAvro.valueOf(payload.getType().name()))
+                .setId(_event.getId())
+                .setType(avroDeviceType)
                 .build();
     }
-
 }
-

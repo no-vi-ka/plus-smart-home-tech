@@ -1,44 +1,16 @@
-server:
-  port: 0
-
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/store
+    username: store
+    password: store
+    driver-class-name: org.postgresql.Driver
   sql:
     init:
       mode: always
-      platform: postgresql
-      schema-locations: classpath:schema.sql
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/shopping-store
-    username: shopping-store
-    password: shopping-store
-  jpa:
-    defer-datasource-initialization: true
-    hibernate:
-      ddl-auto: none
-    generate-ddl: false
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        jdbc:
-          time_zone: UTC
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 logging:
   level:
-    feign: DEBUG
-    ru.yandex.practicum.shoppingstore: DEBUG
-    org:
-      springframework:
-        jdbc:
-          datasource:
-            init: DEBUG
-        orm:
-          jpa: INFO
-          jpa.JpaTransactionManager: DEBUG
-        transaction: INFO
-        transaction.interceptor: TRACE
-      hibernate:
-        SQL: DEBUG
-        cloud.openfeign: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.http: DEBUG
+    org.slf4j: DEBUG
+    ru.practicum: DEBUG

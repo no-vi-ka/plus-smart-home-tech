@@ -7,23 +7,24 @@ import ru.yandex.practicum.kafka.telemetry.event.ClimateSensorAvro;
 import ru.yandex.practicum.telemetry.collector.service.KafkaEventProducer;
 
 @Component
-public class ClimateSensorEventHandler extends BaseSensorEventHandler<ClimateSensorAvro> {
+public class ClimateSensorEventHandler  extends BaseSensorEventHandler<ClimateSensorAvro> {
+
     public ClimateSensorEventHandler(KafkaEventProducer producer) {
         super(producer);
     }
 
     @Override
-    public SensorEventProto.PayloadCase getType() {
+    public SensorEventProto.PayloadCase getMessageType() {
         return SensorEventProto.PayloadCase.CLIMATE_SENSOR_EVENT;
     }
 
     @Override
-    public ClimateSensorAvro mapToAvro(SensorEventProto event) {
-        ClimateSensorProto payload = event.getClimateSensorEvent();
+    protected ClimateSensorAvro mapToAvro(SensorEventProto event) {
+        ClimateSensorProto _event = event.getClimateSensorEvent();
         return ClimateSensorAvro.newBuilder()
-                .setTemperatureC(payload.getTemperatureC())
-                .setHumidity(payload.getHumidity())
-                .setCo2Level(payload.getCo2Level())
+                .setCo2Level(_event.getCo2Level())
+                .setHumidity(_event.getHumidity())
+                .setTemperatureC(_event.getTemperatureC())
                 .build();
     }
 }

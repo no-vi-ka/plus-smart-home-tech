@@ -2,6 +2,12 @@ server:
   port: 8081
 
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/analyzer
+    username: analyzer
+    password: analyzer
+    driver-class-name: org.postgresql.Driver
+
   sql:
     init:
       mode: always
@@ -16,12 +22,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show_sql: true
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/analyzer
-    username: analyzer
-    password: analyzer
-    driver-class-name: org.postgresql.Driver
 
 logging:
   level:
@@ -47,7 +47,7 @@ analyzer:
     hub-consumer:
       properties:
         "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
-        "value.deserializer": ru.yandex.practicum.kafka.serializer.HubEventDeserializer
+        "value.deserializer": ru.yandex.practicum.kafka.deserializer.HubEventDeserializer
         "group.id": "analyzer.hub.group.id"
         "client.id": "analyzer-hub"
         "bootstrap.servers": localhost:9092
@@ -60,7 +60,7 @@ analyzer:
     snapshot-consumer:
       properties:
         "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
-        "value.deserializer": ru.yandex.practicum.kafka.serializer.SensorsSnapshotDeserializer
+        "value.deserializer": ru.yandex.practicum.kafka.deserializer.SensorsSnapshotDeserializer
         "group.id": "analyzer.snapshot.group.id"
         "client.id": "analyzer-snapshot"
         "bootstrap.servers": localhost:9092
@@ -72,5 +72,5 @@ analyzer:
 
 
     topics:
-      HUB_EVENTS: telemetry.hubs.v1
-      SNAPSHOT_EVENTS: telemetry.snapshots.v1
+      hub-events: telemetry.hubs.v1
+      snapshots-events: telemetry.snapshots.v1

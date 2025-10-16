@@ -43,21 +43,21 @@ services:
     ports:
       - "5432:5432"
 
-  shopping-store-db:
+  store-db:
     image: postgres:16.1
     environment:
-      POSTGRES_DB: shopping-store
-      POSTGRES_USER: shopping-store
-      POSTGRES_PASSWORD: shopping-store
+      POSTGRES_DB: store
+      POSTGRES_USER: store
+      POSTGRES_PASSWORD: store
     ports:
       - "5433:5432"
 
-  shopping-cart-db:
+  cart-db:
     image: postgres:16.1
     environment:
-      POSTGRES_DB: shopping-cart
-      POSTGRES_USER: shopping-cart
-      POSTGRES_PASSWORD: shopping-cart
+      POSTGRES_DB: cart
+      POSTGRES_USER: cart
+      POSTGRES_PASSWORD: cart
     ports:
       - "5434:5432"
 

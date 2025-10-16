@@ -1,16 +1,18 @@
-CREATE TABLE IF NOT EXISTS shopping_cart (
-    id UUID DEFAULT gen_random_uuid() NOT NULL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+DROP TABLE IF EXISTS cart_products CASCADE;
+DROP TABLE IF EXISTS shopping_cart CASCADE;
+
+CREATE TABLE IF NOT EXISTS shopping_cart
+(
+    shopping_cart_id UUID PRIMARY KEY,
+    username         VARCHAR(255) NOT NULL,
+    state            VARCHAR(12) CHECK (state IN ('ACTIVE', 'DEACTIVATED'))
 );
 
-CREATE TABLE IF NOT EXISTS shopping_cart_item(
-    shopping_cart_id UUID NOT NULL,
-    product_id UUID NOT NULL,
-    quantity INT NOT NULL CHECK ( quantity > 0 ),
-    PRIMARY KEY (shopping_cart_id, product_id),
-    CONSTRAINT fk_shopping_cart_id
-        FOREIGN KEY (shopping_cart_id)
-        REFERENCES shopping_cart(id) ON DELETE CASCADE
-)
+CREATE TABLE IF NOT EXISTS cart_products
+(
+    shopping_cart_shopping_cart_id UUID NOT NULL,
+    product_id                     UUID NOT NULL,
+    quantity                       BIGINT,
+    PRIMARY KEY (shopping_cart_shopping_cart_id, product_id),
+    CONSTRAINT fk_cart_products_cart FOREIGN KEY (shopping_cart_shopping_cart_id) REFERENCES shopping_cart (shopping_cart_id)
+);

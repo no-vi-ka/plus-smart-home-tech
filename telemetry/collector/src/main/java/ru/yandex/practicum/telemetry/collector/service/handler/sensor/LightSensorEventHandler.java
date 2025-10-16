@@ -7,23 +7,23 @@ import ru.yandex.practicum.kafka.telemetry.event.LightSensorAvro;
 import ru.yandex.practicum.telemetry.collector.service.KafkaEventProducer;
 
 @Component
-public class LightSensorEventHandler extends BaseSensorEventHandler<LightSensorAvro> {
+public class LightSensorEventHandler  extends BaseSensorEventHandler<LightSensorAvro> {
+
     public LightSensorEventHandler(KafkaEventProducer producer) {
         super(producer);
     }
 
     @Override
-    public SensorEventProto.PayloadCase getType() {
+    public SensorEventProto.PayloadCase getMessageType() {
         return SensorEventProto.PayloadCase.LIGHT_SENSOR_EVENT;
     }
 
     @Override
-    public LightSensorAvro mapToAvro(SensorEventProto eventProto) {
-        LightSensorProto payload = eventProto.getLightSensorEvent();
+    protected LightSensorAvro mapToAvro(SensorEventProto event) {
+        LightSensorProto _event = event.getLightSensorEvent();
         return LightSensorAvro.newBuilder()
-                .setLinkQuality(payload.getLinkQuality())
-                .setLuminosity(payload.getLuminosity())
+                .setLinkQuality(_event.getLinkQuality())
+                .setLuminosity(_event.getLuminosity())
                 .build();
     }
-
 }

@@ -5,41 +5,44 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.telemetry.collector.configuration.KafkaConfig;
-import ru.yandex.practicum.telemetry.collector.configuration.TopicType;
+import ru.yandex.practicum.telemetry.collector.config.KafkaConfig;
+import ru.yandex.practicum.telemetry.collector.config.KafkaConfig.TopicType;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
+import java.util.EnumMap;
 
-@Component
 @Slf4j
+@Component
 public class KafkaEventProducer implements AutoCloseable {
-    protected final KafkaProducer<String, SpecificRecordBase> kafkaProducer;
-    protected final Map<TopicType, String> topics;
+
+    protected final KafkaProducer<String, SpecificRecordBase> producer;
+    protected final EnumMap<TopicType, String> topics;
 
     public KafkaEventProducer(KafkaConfig kafkaConfig) {
-        this.kafkaProducer = new KafkaProducer<>(kafkaConfig.getProducer().getProperties());
-        this.topics = kafkaConfig.getTopics();
+        this.topics = kafkaConfig.getProducer().getTopics();
+        this.producer = new KafkaProducer<>(kafkaConfig.getProducer().getProperties());
     }
 
-    public void send(SpecificRecordBase event, String hubId, Instant timestamp, TopicType topic) {
-        String topicName = topics.get(topic);
+    public void send(SpecificRecordBase event, String hubId, Instant timeStamp, KafkaConfig.TopicType topicType) {
+        String topic = topics.get(topicType);
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(
-                topicName,
+                topic,
                 null,
-                timestamp.toEpochMilli(),
+                timeStamp.toEpochMilli(),
                 hubId,
                 event
         );
 
-        log.info("<== Send message: {} to topic: {}", record, topic);
-        kafkaProducer.send(record);
+        log.trace("Сохраняю событие {}, связанное с хабом {}, в топик {}",
+                event.getClass().getSimpleName(), hubId, topic);
+
+        log.info("<== Json: {}", event);
+        producer.send(record);
     }
 
-    @Override
     public void close() {
-        kafkaProducer.flush();
-        kafkaProducer.close(Duration.ofSeconds(10));
+        producer.flush();
+        producer.close(Duration.ofSeconds(10));
     }
 }
