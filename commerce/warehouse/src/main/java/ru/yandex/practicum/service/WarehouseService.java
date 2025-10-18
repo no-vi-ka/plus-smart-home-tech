@@ -1,17 +1,17 @@
 package ru.yandex.practicum.service;
 
-import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.yandex.practicum.dto.warehouse.AddressDto;
-import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.AddressDto;
+import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.requests.AddProductToWarehouseRequest;
+import ru.yandex.practicum.requests.NewProductInWarehouseRequest;
 
 public interface WarehouseService {
-    void addNewProductToWarehouse(NewProductInWarehouseRequest newProductInWarehouseRequest);
+    void newProductInWarehouse(NewProductInWarehouseRequest request);
 
-    BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto);
+    BookedProductsDto checkProductQuantityEnoughForShoppingCart(ShoppingCartDto cartDto);
 
-    void addProductInWarehouse(AddProductToWarehouseRequest addProductToWarehouseRequest);
+    void addProductToWarehouse(AddProductToWarehouseRequest request);
 
-    AddressDto getAddressWarehouse();
+    AddressDto getWarehouseAddress();
 }

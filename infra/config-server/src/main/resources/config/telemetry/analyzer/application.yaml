@@ -1,51 +1,34 @@
 spring:
-  output:
-    ansi:
-      enabled: always
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      client-id: HubEventConsumer
+      group-id: hubEvent.group.id
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: ru.yandex.practicum.deserializer.HubEventDeserializer
+      enable-auto-commit: false
+      snapshots-client-id: SnapshotsConsumer
+      snapshots-group-id: snapshot.group.id
+      snapshots-deserializer: ru.yandex.practicum.deserializer.SensorSnapshotDeserializer
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
-  sql:
-    init:
-      mode: always
+      show_sql: true
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/smart-home-tech
-    username: smart-home-tech
-    password: smart-home-tech
-
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/scenario-db
+    username: admin
+    password: password
 grpc:
   client:
     hub-router:
-      address: 'static://localhost:59090'
+      address: static://localhost:59090
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
-
-collector:
-  kafka:
-    consumer:
-      hub:
-        properties:
-          client.id: analyzerHubConsumer
-          group.id: analyzer-hub
-          bootstrap.servers: localhost:9092
-          key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-          value.deserializer: deserializer.HubEventDeserializer
-          enable.auto.commit: false
-      snapshot:
-        properties:
-          client.id: analyzerSnapshotConsumer
-          group.id: analyzer-snapshot
-          bootstrap.servers: localhost:9092
-          key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-          value.deserializer: deserializer.SnapshotEventDeserializer
-          enable.auto.commit: false
-    topics:
-      sensors-events: telemetry.sensors.v1
-      hubs-events: telemetry.hubs.v1
-      snapshots-events: telemetry.snapshots.v1
+topics:
+  snapshots-topic: telemetry.snapshots.v1
+  hub-event-topic: telemetry.hubs.v1

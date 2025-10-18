@@ -1,43 +1,43 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.api.warehouse.WarehouseApi;
-import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.yandex.practicum.dto.warehouse.AddressDto;
-import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.yandex.practicum.clients.WarehouseClient;
+import ru.yandex.practicum.dto.AddressDto;
+import ru.yandex.practicum.dto.BookedProductsDto;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.requests.AddProductToWarehouseRequest;
+import ru.yandex.practicum.requests.NewProductInWarehouseRequest;
 import ru.yandex.practicum.service.WarehouseService;
 
-@Slf4j
 @RestController
+@Slf4j
 @RequiredArgsConstructor
-public class WarehouseController implements WarehouseApi {
+@RequestMapping("/api/v1/warehouse")
+public class WarehouseController implements WarehouseClient {
     private final WarehouseService warehouseService;
 
     @Override
-    public void addNewProductToWarehouse(NewProductInWarehouseRequest newProductInWarehouseRequest) {
-        log.info("DTO на добавление нового продукта на склад: {}", newProductInWarehouseRequest);
-        warehouseService.addNewProductToWarehouse(newProductInWarehouseRequest);
+    public void newProductInWarehouse(@RequestBody @Valid NewProductInWarehouseRequest request) {
+        warehouseService.newProductInWarehouse(request);
     }
 
     @Override
-    public BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto) {
-        log.info("DTO на проверку количества продуктов на складе: {}", shoppingCartDto);
-        return warehouseService.checkProductQuantityInWarehouse(shoppingCartDto);
+    public BookedProductsDto checkProductQuantityEnoughForShoppingCart(@RequestBody @Valid ShoppingCartDto cartDto) {
+        return warehouseService.checkProductQuantityEnoughForShoppingCart(cartDto);
     }
 
     @Override
-    public void addProductInWarehouse(AddProductToWarehouseRequest addProductToWarehouseRequest) {
-        log.info("DTO на добавление продукта на склад: {}", addProductToWarehouseRequest);
-        warehouseService.addProductInWarehouse(addProductToWarehouseRequest);
+    public void addProductToWarehouse(@RequestBody @Valid AddProductToWarehouseRequest request) {
+        warehouseService.addProductToWarehouse(request);
     }
 
     @Override
-    public AddressDto getAddressWarehouse() {
-        log.info("Запрос на получение адреса склада");
-        return warehouseService.getAddressWarehouse();
+    public AddressDto getWarehouseAddress() {
+        return warehouseService.getWarehouseAddress();
     }
 }

@@ -1,21 +1,21 @@
 package ru.yandex.practicum.service;
 
-import ru.yandex.practicum.dto.shoppingCart.ChangeProductQuantityRequest;
-import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
+import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.requests.ChangeProductQuantityRequest;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public interface ShoppingCartService {
-    ShoppingCartDto addProductInShoppingCart(String username, Map<UUID, Integer> productsMap);
+    ShoppingCartDto getShoppingCart(String username);
 
-    ShoppingCartDto getUserShoppingCart(String username);
+    ShoppingCartDto addProductToShoppingCart(String username, Map<UUID, Integer> request);
 
-    void deactivateUserShoppingCart(String username);
+    void deactivateCurrentShoppingCart(String username);
 
-    ShoppingCartDto removeProductFromShoppingCart(String username, List<UUID> productsId);
+    ShoppingCartDto removeFromShoppingCart(String username, List<UUID> products);
 
-    ShoppingCartDto changeProductQuantityInShoppingCart(String username,
-                                                        ChangeProductQuantityRequest changeProductQuantityRequest);
+    ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest requestDto);
+
 }

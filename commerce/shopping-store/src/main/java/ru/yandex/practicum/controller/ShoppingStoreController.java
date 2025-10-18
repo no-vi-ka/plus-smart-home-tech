@@ -1,57 +1,64 @@
 package ru.yandex.practicum.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.api.shoppingStore.ShoppingStoreApi;
-import ru.yandex.practicum.dto.shoppingStore.ProductCategory;
-import ru.yandex.practicum.dto.shoppingStore.ProductDto;
-import ru.yandex.practicum.dto.shoppingStore.SetProductQuantityStateRequest;
-import ru.yandex.practicum.service.ShoppingStoreService;
+import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.clients.ShoppingStoreClient;
+import ru.yandex.practicum.dto.ProductDto;
+import ru.yandex.practicum.enums.ProductCategory;
+import ru.yandex.practicum.requests.SetProductQuantityStateRequest;
+import ru.yandex.practicum.service.ShoppingStoreServiceImpl;
 
 import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @RestController
+@RequestMapping("/api/v1/shopping-store")
 @RequiredArgsConstructor
-public class ShoppingStoreController implements ShoppingStoreApi {
-    private final ShoppingStoreService storeService;
+public class ShoppingStoreController implements ShoppingStoreClient {
+
+    private final ShoppingStoreServiceImpl service;
 
     @Override
-    public ProductDto createProduct(ProductDto productDto) {
-        log.info("DTO на создаие нового продукта: {}", productDto);
-        return storeService.createProduct(productDto);
+    public List<ProductDto> getProducts(@RequestParam @NotNull ProductCategory productCategory,
+                                         Pageable pageable) {
+        log.info("Get list of products in pageable view");
+        return service.getProducts(productCategory, pageable);
     }
 
     @Override
-    public ProductDto findProductById(String productId) {
-        log.info("Поиск product по его productId: {}", productId);
-        return storeService.findProductById(productId);
+    public ProductDto createNewProduct(@RequestBody @Valid ProductDto productDto) {
+        log.info("Create new product");
+        return service.createNewProduct(productDto);
     }
 
     @Override
-    public List<ProductDto> findAllByProductCategory(ProductCategory productCategory, Pageable pageable) {
-        log.info("Поиск products по каиегории и pageable: {}, {}", productCategory, pageable);
-        return storeService.findAllByProductCategory(productCategory, pageable);
+    public ProductDto updateProduct(@RequestBody @Valid ProductDto productDto) {
+        log.info("Update product with id = {}", productDto.getProductId());
+        return service.updateProduct(productDto);
     }
 
     @Override
-    public ProductDto updateProduct(ProductDto productDto) {
-        log.info("DTO на обновление продукта: {}", productDto);
-        return storeService.updateProduct(productDto);
+    public Boolean removeProduct(@RequestBody @NotNull UUID productId) {
+        log.info("Remove product with id = {}", productId);
+        return service.removeProductFromStore(productId);
     }
 
     @Override
-    public Boolean removeProductFromStore(UUID productId) {
-        log.info("Id продукта, который нужно удалить: {}", productId);
-        return storeService.removeProductFromStore(productId);
+    public Boolean setProductQuantityState(@RequestBody @Valid
+                                               SetProductQuantityStateRequest setProductQuantityStateRequest) {
+        log.info("Set product with id = {} quantity state", setProductQuantityStateRequest.getProductId());
+        return service.setProductQuantityState(setProductQuantityStateRequest);
     }
 
-    @Override
-    public Boolean setProductQuantityState(SetProductQuantityStateRequest quantityStateRequest) {
-        log.info("Запрос на обновление QuantityState продукта: {}", quantityStateRequest);
-        return storeService.setProductQuantityState(quantityStateRequest);
+    @GetMapping("/{productId}")
+    public ProductDto getProduct(@PathVariable @NotNull UUID productId) {
+        log.info("Get product with id = {}", productId);
+        return service.getProduct(productId);
     }
+
 }

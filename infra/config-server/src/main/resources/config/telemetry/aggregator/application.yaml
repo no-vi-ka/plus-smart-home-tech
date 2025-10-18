@@ -1,23 +1,16 @@
-kafka:
-  producer:
-    properties:
-      bootstrap.servers: localhost:9092
-      key.serializer: org.apache.kafka.common.serialization.StringSerializer
-      value.serializer: serializer.GeneralAvroSerializer
-  consumer:
-    properties:
-      client.id: AggregatorConsumer
-      group.id: aggregator-group
-      bootstrap.servers: localhost:9092
-      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value.deserializer: deserializer.SensorEventDeserializer
-      enable.auto.commit: false
-  topics:
-    sensors-events: telemetry.sensors.v1
-    hubs-events: telemetry.hubs.v1
-    snapshots-events: telemetry.snapshots.v1
+topics:
+  sensors: telemetry.sensors.v1
+  snapshots: telemetry.snapshots.v1
 
-spring:
-  output:
-    ansi:
-      enabled: always
+bootstrap_servers: localhost:9092
+
+producer:
+  key_serializer_class: org.apache.kafka.common.serialization.StringSerializer
+  value_serializer_class: ru.yandex.practicum.serializer.EventAvroSerializer
+
+consumer:
+  client_id: SensorEventConsumer
+  group_id: sensorEvent.group_id
+  key_deserializer_class: org.apache.kafka.common.serialization.StringDeserializer
+  value_deserializer_class: ru.yandex.practicum.deserializer.SensorEventDeserializer
+  enable_auto_commit: false

@@ -1,26 +1,18 @@
 package ru.yandex.practicum.mapper;
 
-import lombok.extern.slf4j.Slf4j;
-import ru.yandex.practicum.dto.warehouse.DimensionDto;
-import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import ru.yandex.practicum.model.WarehouseProduct;
+import ru.yandex.practicum.requests.NewProductInWarehouseRequest;
 
-import java.util.UUID;
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+public interface WarehouseMapper {
 
-@Slf4j
-public class WarehouseMapper {
-    public static WarehouseProduct mapToWarehouseProduct(NewProductInWarehouseRequest newProductRequest) {
-        WarehouseProduct product = new WarehouseProduct();
-        DimensionDto dimension = newProductRequest.getDimension();
+    @Mapping(target = "quantity", ignore = true)
+    @Mapping(target = "depth", source = "dto.dimension.depth")
+    @Mapping(target = "width", source = "dto.dimension.width")
+    @Mapping(target = "height", source = "dto.dimension.height")
+    WarehouseProduct toWarehouseProduct(NewProductInWarehouseRequest dto);
 
-        product.setProductId(UUID.fromString(newProductRequest.getProductId()));
-        product.setFragile(newProductRequest.getFragile());
-        product.setWidth(dimension.getWidth());
-        product.setHeight(dimension.getHeight());
-        product.setDepth(dimension.getDepth());
-        product.setWeight(newProductRequest.getWeight());
-        product.setQuantity(0);
-        log.info("Результат маппинга в WarehouseProduct: {}", product);
-        return product;
-    }
 }
