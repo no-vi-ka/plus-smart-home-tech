@@ -1,21 +1,21 @@
 package ru.yandex.practicum.service;
 
-import org.springframework.http.ResponseEntity;
-import ru.yandex.practicum.dto.ShoppingCartDto;
+import ru.yandex.practicum.dto.shoppingCart.ChangeProductQuantityRequest;
+import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public interface ShoppingCartService {
+    ShoppingCartDto addProductInShoppingCart(String username, Map<UUID, Integer> productsMap);
 
-    ShoppingCartDto addProduct(String username, Map<UUID, Long> products);
+    ShoppingCartDto getUserShoppingCart(String username);
 
-    ShoppingCartDto getCart(String username);
+    void deactivateUserShoppingCart(String username);
 
-    ResponseEntity<Void> deactivateCart(String username);
+    ShoppingCartDto removeProductFromShoppingCart(String username, List<UUID> productsId);
 
-    ShoppingCartDto removeProducts(String username, List<UUID> products);
-
-    ShoppingCartDto changeProductQuantity(String username, Map<Long, UUID> productsQuantity);
+    ShoppingCartDto changeProductQuantityInShoppingCart(String username,
+                                                        ChangeProductQuantityRequest changeProductQuantityRequest);
 }

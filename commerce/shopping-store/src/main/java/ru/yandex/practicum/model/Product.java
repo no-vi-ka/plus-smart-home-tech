@@ -1,51 +1,45 @@
 package ru.yandex.practicum.model;
+
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import ru.yandex.practicum.enums.ProductCategory;
-import ru.yandex.practicum.enums.ProductState;
-import ru.yandex.practicum.enums.QuantityState;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import ru.yandex.practicum.dto.shoppingStore.ProductCategory;
+import ru.yandex.practicum.dto.shoppingStore.ProductState;
+import ru.yandex.practicum.dto.shoppingStore.QuantityState;
 
 import java.util.UUID;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "products")
+@Getter
+@Setter
+@ToString
 public class Product {
     @Id
-    @GeneratedValue
-    UUID productId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "product_id", updatable = false, nullable = false)
+    private UUID productId;
 
-    @NotBlank
-    @Size(max = 255)
-    String productName;
+    @Column(name = "product_name")
+    private String productName;
 
-    String description;
+    private String description;
 
-    String imageSrc;
+    @Column(name = "image_src")
+    private String imageSrc;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    QuantityState quantityState;
+    @Column(name = "quantity_state")
+    private QuantityState quantityState;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    ProductState productState;
+    @Column(name = "product_state")
+    private ProductState productState;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
-    ProductCategory productCategory;
+    @Column(name = "product_category")
+    private ProductCategory productCategory;
 
-    @NotNull
-    @Positive
-    Double price;
+    private Double price;
 }

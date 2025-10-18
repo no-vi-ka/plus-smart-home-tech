@@ -1,59 +1,57 @@
 package ru.yandex.practicum.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.dto.ProductDto;
-import ru.yandex.practicum.enums.ProductCategory;
-import ru.yandex.practicum.enums.QuantityState;
-import ru.yandex.practicum.service.ProductService;
+import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.api.shoppingStore.ShoppingStoreApi;
+import ru.yandex.practicum.dto.shoppingStore.ProductCategory;
+import ru.yandex.practicum.dto.shoppingStore.ProductDto;
+import ru.yandex.practicum.dto.shoppingStore.SetProductQuantityStateRequest;
+import ru.yandex.practicum.service.ShoppingStoreService;
 
+import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
-@RequestMapping("/api/v1/shopping-store")
 @RequiredArgsConstructor
-public class ShoppingStoreController {
-    private final ProductService productService;
+public class ShoppingStoreController implements ShoppingStoreApi {
+    private final ShoppingStoreService storeService;
 
-    @PutMapping
-    public ProductDto addProduct(@Valid @RequestBody ProductDto product) {
-        return productService.addProduct(product);
+    @Override
+    public ProductDto createProduct(ProductDto productDto) {
+        log.info("DTO на создаие нового продукта: {}", productDto);
+        return storeService.createProduct(productDto);
     }
 
-    @PostMapping
-    public ProductDto updateProduct(@RequestBody ProductDto product) {
-        return productService.updateProduct(product);
+    @Override
+    public ProductDto findProductById(String productId) {
+        log.info("Поиск product по его productId: {}", productId);
+        return storeService.findProductById(productId);
     }
 
-    @GetMapping // manager
-    public Page<ProductDto> getProduct(@RequestParam ProductCategory category, Pageable pageable) {
-        return productService.getProduct(category, pageable);
+    @Override
+    public List<ProductDto> findAllByProductCategory(ProductCategory productCategory, Pageable pageable) {
+        log.info("Поиск products по каиегории и pageable: {}, {}", productCategory, pageable);
+        return storeService.findAllByProductCategory(productCategory, pageable);
     }
 
-    @PostMapping("/removeProductFromStore") // manager
-    public ResponseEntity<Boolean> removeProduct(@RequestBody UUID productId) {
-        boolean deleted = productService.removeProduct(productId);
-        return deleted
-                ? ResponseEntity.ok(true)
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+    @Override
+    public ProductDto updateProduct(ProductDto productDto) {
+        log.info("DTO на обновление продукта: {}", productDto);
+        return storeService.updateProduct(productDto);
     }
 
-    @PostMapping("/quantityState") // warehouse
-    public ResponseEntity<Boolean> setProductState(@RequestParam UUID productId,
-                                                   @RequestParam QuantityState quantityState) {
-        boolean changed = productService.setProductState(productId, quantityState);
-        return changed
-                ? ResponseEntity.ok(true)
-                : ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+    @Override
+    public Boolean removeProductFromStore(UUID productId) {
+        log.info("Id продукта, который нужно удалить: {}", productId);
+        return storeService.removeProductFromStore(productId);
     }
 
-    @GetMapping("/{productId}")
-    public ProductDto getProductById(@PathVariable UUID productId) {
-        return productService.getProductById(productId);
+    @Override
+    public Boolean setProductQuantityState(SetProductQuantityStateRequest quantityStateRequest) {
+        log.info("Запрос на обновление QuantityState продукта: {}", quantityStateRequest);
+        return storeService.setProductQuantityState(quantityStateRequest);
     }
 }

@@ -1,34 +1,34 @@
 package ru.yandex.practicum.model;
 
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import ru.yandex.practicum.dto.shoppingCart.CartState;
 
 import java.util.Map;
 import java.util.UUID;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "carts")
+@Table(name = "shopping_carts")
+@Getter
+@Setter
+@ToString
 public class ShoppingCart {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "cart_id")
-    UUID id;
+    @Column(name = "shopping_cart_id", updatable = false, nullable = false)
+    private UUID shoppingCartId;
 
-    @Column(name = "is_active")
-    Boolean isActive;
+    private String username;
 
-    @Column(name = "username", nullable = false, unique = true)
-    String username;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cart_state")
+    private CartState cartState;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "cart_products", joinColumns = @JoinColumn(name = "cart_id"))
-    @MapKeyColumn(name = "product_id", columnDefinition = "uuid")
-    @Column(name = "quantity", nullable = false)
-    Map<UUID, Long> products;
+    @ElementCollection
+    @CollectionTable(name = "products_in_shopping_carts", joinColumns = @JoinColumn(name = "shopping_cart_id"))
+    @MapKeyColumn(name = "product_id")
+    @Column(name = "quantity")
+    private Map<UUID, Integer> products;
 }

@@ -1,16 +1,23 @@
-server:
-  port: 0
-spring:
-  application:
-    name:
-      aggregator
-  kafka:
-    bootstrap-servers: localhost:9092
 kafka:
+  producer:
+    properties:
+      bootstrap.servers: localhost:9092
+      key.serializer: org.apache.kafka.common.serialization.StringSerializer
+      value.serializer: serializer.GeneralAvroSerializer
+  consumer:
+    properties:
+      client.id: AggregatorConsumer
+      group.id: aggregator-group
+      bootstrap.servers: localhost:9092
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value.deserializer: deserializer.SensorEventDeserializer
+      enable.auto.commit: false
   topics:
-    sensor-events: telemetry.sensors.v1
-    sensor-snapshot: telemetry.snapshots.v1
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+    sensors-events: telemetry.sensors.v1
+    hubs-events: telemetry.hubs.v1
+    snapshots-events: telemetry.snapshots.v1
+
+spring:
+  output:
+    ansi:
+      enabled: always

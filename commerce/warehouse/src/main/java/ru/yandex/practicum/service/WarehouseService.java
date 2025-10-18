@@ -1,19 +1,17 @@
 package ru.yandex.practicum.service;
 
-import org.springframework.http.ResponseEntity;
-import ru.yandex.practicum.dto.AddressDto;
-import ru.yandex.practicum.dto.BookedProductsDto;
-import ru.yandex.practicum.dto.ShoppingCartDto;
-import ru.yandex.practicum.request.AddProductToWarehouseRequest;
-import ru.yandex.practicum.request.NewProductInWarehouseRequest;
+import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
+import ru.yandex.practicum.dto.warehouse.AddProductToWarehouseRequest;
+import ru.yandex.practicum.dto.warehouse.AddressDto;
+import ru.yandex.practicum.dto.warehouse.BookedProductsDto;
+import ru.yandex.practicum.dto.warehouse.NewProductInWarehouseRequest;
 
 public interface WarehouseService {
+    void addNewProductToWarehouse(NewProductInWarehouseRequest newProductInWarehouseRequest);
 
-    ResponseEntity<Void> addNewProduct(NewProductInWarehouseRequest request);
+    BookedProductsDto checkProductQuantityInWarehouse(ShoppingCartDto shoppingCartDto);
 
-    BookedProductsDto checkProductAvailability(ShoppingCartDto shoppingCartDto);
+    void addProductInWarehouse(AddProductToWarehouseRequest addProductToWarehouseRequest);
 
-    ResponseEntity<Void> addProductToWarehouse(AddProductToWarehouseRequest request);
-
-    AddressDto getWarehouseAddressForDelivery();
+    AddressDto getAddressWarehouse();
 }
