@@ -9,8 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface ScenarioRepository extends JpaRepository<Scenario, Long> {
-    List<Scenario> findByHubId(String hubId);
+    Optional<Scenario> findByNameAndHubId(String name, String hubId);
 
-    Optional<Scenario> findByHubIdAndName(String hubId, String name);
+    List<Scenario> findAllByHubId(String hubId);
 
+    void deleteByHubIdAndName(String hubId, String name);
 }

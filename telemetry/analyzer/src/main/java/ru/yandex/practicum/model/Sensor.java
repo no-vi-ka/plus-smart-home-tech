@@ -1,28 +1,38 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "sensors")
 @Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Setter
+@ToString
 public class Sensor {
     @Id
-    @Column(name = "id")
-    String id;
+    private String id;
 
     @Column(name = "hub_id")
-    String hubId;
+    private String hubId;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "scenario_conditions",
+            joinColumns = @JoinColumn(name = "sensor_id"),
+            inverseJoinColumns = @JoinColumn(name = "scenario_id")
+    )
+    private Set<Scenario> scenarioConditions = new HashSet<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "scenario_actions",
+            joinColumns = @JoinColumn(name = "sensor_id"),
+            inverseJoinColumns = @JoinColumn(name = "scenario_id")
+    )
+    private Set<Scenario> scenarioActions = new HashSet<>();
 }

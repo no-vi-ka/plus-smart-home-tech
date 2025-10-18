@@ -1,46 +1,49 @@
 package ru.yandex.practicum.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Table(name = "scenarios")
 @Getter
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Setter
+@ToString
 public class Scenario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    Long id;
+    private Long id;
 
     @Column(name = "hub_id")
-    String hubId;
+    private String hubId;
 
-    @Column(name = "name")
-    String name;
+    private String name;
 
-    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<ScenarioCondition> conditions;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @MapKeyColumn(
+            table = "scenario_conditions",
+            name = "sensor_id"
+    )
+    @JoinTable(
+            name = "scenario_conditions",
+            joinColumns = @JoinColumn(name = "scenario_id"),
+            inverseJoinColumns = @JoinColumn(name = "condition_id")
+    )
+    private Map<String, Condition> conditions = new HashMap<>();
 
-    @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<ScenarioAction> actions;
-
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @MapKeyColumn(
+            table = "scenario_actions",
+            name = "sensor_id"
+    )
+    @JoinTable(
+            name = "scenario_actions",
+            joinColumns = @JoinColumn(name = "scenario_id"),
+            inverseJoinColumns = @JoinColumn(name = "action_id")
+    )
+    private Map<String, Action> actions = new HashMap<>();
 }
