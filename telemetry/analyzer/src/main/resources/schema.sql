@@ -17,14 +17,14 @@ CREATE TABLE IF NOT EXISTS conditions (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     type VARCHAR,
     operation VARCHAR,
-    val INTEGER
+    value INTEGER
 );
 
 -- создаём таблицу actions
 CREATE TABLE IF NOT EXISTS actions (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     type VARCHAR,
-    val INTEGER
+    value INTEGER
 );
 
 -- создаём таблицу scenario_conditions, связывающую сценарий, датчик и условие активации сценария
