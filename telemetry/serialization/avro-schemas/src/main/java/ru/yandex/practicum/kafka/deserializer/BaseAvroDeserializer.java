@@ -6,33 +6,33 @@ import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Deserializer;
 
-public abstract class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
+public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
     private final DecoderFactory decoderFactory;
-    private final DatumReader<T> datumReader;
+    private final DatumReader<T> reader;
+    private final Schema schema;
 
     public BaseAvroDeserializer(Schema schema) {
-        this.decoderFactory = DecoderFactory.get();
-        this.datumReader = new SpecificDatumReader<>(schema);
+        this(DecoderFactory.get(), schema);
     }
 
     public BaseAvroDeserializer(DecoderFactory decoderFactory, Schema schema) {
+        this.schema = schema;
         this.decoderFactory = decoderFactory;
-        datumReader = new SpecificDatumReader<>(schema);
+        this.reader = new SpecificDatumReader<>(schema);
     }
 
     @Override
-    public T deserialize(String topic, byte[] bytes) {
+    public T deserialize(String topic, byte[] data) {
         try {
-            if (bytes != null) {
-                BinaryDecoder decoder = decoderFactory.binaryDecoder(bytes, null);
-                return this.datumReader.read(null, decoder);
+            if (data != null) {
+                BinaryDecoder decoder = decoderFactory.binaryDecoder(data, null);
+                return this.reader.read(null, decoder);
             }
             return null;
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка десериализации данных из топика [" + topic + "]", e);
+            throw new RuntimeException("Ошибка десериализации Avro данных из топика [" + topic + "]", e);
         }
     }
 }
