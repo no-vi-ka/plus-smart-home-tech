@@ -79,6 +79,13 @@ public class AggregationStarter implements CommandLineRunner {
     public void shutdown() {
         consumer.wakeup();
         running = false;
+        if (producer != null) {
+            try {
+                producer.close(Duration.ofSeconds(10));
+            } catch (Exception e) {
+                log.warn("Error closing producer", e);
+            }
+        }
     }
 
     private void handleRecord(ConsumerRecord<String, SpecificRecordBase> record) {
